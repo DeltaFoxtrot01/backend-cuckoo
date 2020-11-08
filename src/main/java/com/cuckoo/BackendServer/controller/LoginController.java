@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class LoginController {
 
-
-
     /* testing end point */
     @GetMapping("login/hello")
     public String hello() {

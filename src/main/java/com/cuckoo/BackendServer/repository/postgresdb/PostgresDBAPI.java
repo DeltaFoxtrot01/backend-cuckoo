@@ -57,7 +57,7 @@ public class PostgresDBAPI implements DatabaseAPI{
         String sql = "SELECT email, pass, first_name, last_name FROM cuckoo.users WHERE email = ?";
         List<UserType> res = null;
         res = this.jdbcTemplate.query(sql, new Object[] {username}, new UserTypeMapper());
-        if(res == null || res.size() == 0){
+        if(res.isEmpty()){
             throw new UnknownUserException(username);
         }
         return res.get(0);
