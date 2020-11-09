@@ -10,47 +10,49 @@ import javax.servlet.http.HttpServletResponse;
 
 import javax.servlet.http.Cookie;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.models.jwt.JwtHolder;
 import com.cuckoo.BackendServer.models.usertype.UserType;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- *Filter that allows the login to be made  
+ * Filter that allows the login to be made
  * 
  */
-public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter{
-    private AuthenticationManager authenticationManager;
+public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
+  private AuthenticationManager authenticationManager;
 
-    private JwtUtil jwtTokenUtil;
+  private JwtUtil jwtTokenUtil;
 
-    public JwtLoginFilter(AuthenticationManager authManager, String url, JwtUtil jwt){
-        this.authenticationManager = authManager;
-        this.setFilterProcessesUrl(url);
-        this.jwtTokenUtil = jwt;
+  public JwtLoginFilter(AuthenticationManager authManager, String url, JwtUtil jwt) {
+    this.authenticationManager = authManager;
+    this.setFilterProcessesUrl(url);
+    this.jwtTokenUtil = jwt;
+  }
+
+  @Override
+  public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+      throws AuthenticationException {
+    UserType user = null;
+    try {
+      user = new ObjectMapper().readValue(request.getInputStream(), UserType.class);
+      UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+          user.getUsername(), user.getPassword(), new ArrayList<>());
+      return this.authenticationManager.authenticate(authenticationToken);
+    } catch (InternalAuthenticationServiceException e) {
+      response.setStatus(404);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException {
-        UserType user = null;
-        try{
-            user = new ObjectMapper().readValue(request.getInputStream(), UserType.class);
-            UsernamePasswordAuthenticationToken authenticationToken = 
-                new UsernamePasswordAuthenticationToken(user.getUsername(), 
-                                                        user.getPassword(), 
-                                                        new ArrayList<>());
-            return this.authenticationManager.authenticate(authenticationToken);
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
 
         return null;
     }
