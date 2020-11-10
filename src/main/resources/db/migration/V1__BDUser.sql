@@ -8,5 +8,5 @@ CREATE TABLE cuckoo.users (
     CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
     PRIMARY KEY(email)
 );
-
-INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('david.dm2008@gmail.com','David','Martins','$2y$12$PR1ulfwPgIHJhn7svCM4kO8bpeumIjOa1pg4sRNg4aTxMr11fP0AG ');
+-- password: aPassword
+INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('david.dm2008@gmail.com','David','Martins','$2y$12$KSD3ItIkt1wUhjnQG662Ruaok.2J/wA9x3Buk9cl4hLa73TsMyV1. ');

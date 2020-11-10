@@ -29,7 +29,7 @@ public class JwtUtil{
     }
     
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
-        final Claims claims = extractAllClaims(token);
+        final Claims claims = this.extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
@@ -56,7 +56,7 @@ public class JwtUtil{
         return this.createToken(claims, userDetails.getUsername());
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails){
+    public boolean validateToken(String token, UserDetails userDetails){
         final String username = this.extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !this.isTokenExpired(token));
     }

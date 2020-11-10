@@ -8,7 +8,7 @@ import com.cuckoo.BackendServer.exceptions.DatabaseException;
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
 import com.cuckoo.BackendServer.models.usertype.UserType;
-import com.cuckoo.BackendServer.repository.DatabaseAPI;
+import com.cuckoo.BackendServer.repository.LoginRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ public class CreateUserTest{
     private String last;
 
     @Autowired
-    private DatabaseAPI dbAPI;
+    private LoginRepository dbAPI;
 
     @Autowired
     PasswordEncoder passEncoder;

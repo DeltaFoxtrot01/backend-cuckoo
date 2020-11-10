@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,18 +38,26 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
             throws ServletException, IOException {
         String username = null;
         String jwt = null;
+        String authContent = null;
+        
 
-        Cookie[] cookies = request.getCookies();
-
-        if(cookies != null){
-            for(int i = 0; i < cookies.length; i++){
-                if(cookies[i].getName().equals("sessionToken")){
-                    jwt = cookies[i].getValue();
-                    username = jwtUtil.extractUsername(jwt);
-                    break;
-                }
-            }
+        authContent = request.getHeader("Authorization");
+        if(authContent == null){
+          filterChain.doFilter(request, response);
+          return ;
         }
+        if(authContent.startsWith("Bearer ")){
+          jwt = authContent.substring(7);
+        }
+        else{
+          response.setStatus(400);
+        }
+        if(jwt == null){
+          filterChain.doFilter(request, response);
+          return ;
+        }
+
+        username = jwtUtil.extractUsername(jwt);
 
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = this.loginService.loadUserByUsername(username);
