@@ -5,7 +5,7 @@ package com.cuckoo.BackendServer.exceptions;
  */
 public class UsernameEmptyException extends InvalidArgumentsException{
 
-  public UsernameEmptyException(String name){
-    super(name);
+  public UsernameEmptyException(String description){
+    super(description);
   }
 }
