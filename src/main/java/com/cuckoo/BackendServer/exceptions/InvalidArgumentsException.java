@@ -5,7 +5,7 @@ package com.cuckoo.BackendServer.exceptions;
  */
 public class InvalidArgumentsException extends RuntimeException{
 
-  public InvalidArgumentsException(String name){
-    super(name);
+  public InvalidArgumentsException(String description){
+    super(description);
   }
 }
