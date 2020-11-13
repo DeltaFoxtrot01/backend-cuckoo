@@ -45,14 +45,12 @@ public class CreateUserTest{
 
     @Test
     public void createUserWithSuccess(){
-        System.out.println("Given a user");
         UserType user = new UserType();
         user.setUsername(this.email);
         user.setPassword(this.passEncoder.encode(this.pass));
         user.setFirstName(this.first);
         user.setLastName(this.last);
 
-        System.out.println("When a user that does not exist is created");
         try{
             this.dbAPI.createUserInDatabase(user);
         } catch (UserAlreadyExistsException e){
@@ -60,13 +58,11 @@ public class CreateUserTest{
         }
         UserType res = null;
 
-        System.out.println("The user should exist");
         try{
             res = this.dbAPI.getUserByUsername(this.email);
         } catch (UnknownUserException e){
             fail("User should exist");
         }
-        System.out.println("The info should be the same");
         assertEquals(this.email, res.getUsername(), "Should return the same email");
         assertEquals(this.passEncoder.matches(this.pass, res.getPassword()),true, "Should return the same password");        
         assertEquals(this.first,res.getFirstName(), "Should return the same First Name");
@@ -82,21 +78,18 @@ public class CreateUserTest{
 
     @Test
     void createrUserThatAlreadyExists(){
-        System.out.println("Given a user");
         UserType user = new UserType();
         user.setUsername(this.email);
         user.setPassword(this.passEncoder.encode(this.pass));
         user.setFirstName(this.first);
         user.setLastName(this.last);
 
-        System.out.println("When a user is created");
         try{
             this.dbAPI.createUserInDatabase(user);
         } catch (UserAlreadyExistsException e){
             fail("User should not exist");
         }
 
-        System.out.println("The same user is created again");
         user.setPassword(this.pass);
         assertThrows(UserAlreadyExistsException.class,
         () -> this.dbAPI.createUserInDatabase(user),"User should already exist");
@@ -110,14 +103,11 @@ public class CreateUserTest{
 
     @Test
     public void createUserWithInvalidEmail(){
-        System.out.println("Given a user");
         UserType user = new UserType();
         user.setUsername("123");
         user.setPassword(this.pass);
         user.setFirstName(this.first);
         user.setLastName(this.last);
-
-        System.out.println("When a user is created");
         
         assertThrows(DatabaseException.class, 
                      () -> this.dbAPI.createUserInDatabase(user),"The user should not be created");

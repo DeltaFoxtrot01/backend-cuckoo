@@ -44,14 +44,12 @@ public class UserInfoTest{
 
     @Test
     public void createUserWithSuccess(){
-        System.out.println("Given a user");
         UserType user = new UserType();
         user.setUsername(this.email);
         user.setPassword(this.passEncoder.encode(this.pass));
         user.setFirstName(this.first);
         user.setLastName(this.last);
 
-        System.out.println("When a user that does not exist is created");
         try{
             this.dbAPI.createUserInDatabase(user);
         } catch (UserAlreadyExistsException e){
@@ -59,13 +57,11 @@ public class UserInfoTest{
         }
         UserType res = null;
 
-        System.out.println("The user should exist");
         try{
             res = this.dbAPI.getUserInfo(this.email);
         } catch (UnknownUserException e){
             fail("User should exist");
         }
-        System.out.println("The info should be the same");
         assertEquals(this.email, res.getUsername(), "Should return the same email");
         assertEquals(null, res.getPassword(), "Should not return a password");        
         assertEquals(this.first,res.getFirstName(), "Should return the same First Name");
@@ -80,7 +76,6 @@ public class UserInfoTest{
 
     @Test
     public void getUserInfoFromNonExistingUser(){
-      System.out.println("The user should not exist exist");
       assertThrows(UnknownUserException.class, 
                      () -> this.dbAPI.getUserInfo(this.email),"The user should not be created");
   }

@@ -22,7 +22,7 @@ public class LoginController {
 
     /* retrieves user info */
     @GetMapping("login/userInfo")
-    public UserType hello(Principal principal) {
+    public UserType getUserInfo(Principal principal) {
         return this.loginService.getUserInfo(principal.getName()); 
     }
 

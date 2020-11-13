@@ -1,6 +1,7 @@
 package com.cuckoo.BackendServer.service;
 
 import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
+import com.cuckoo.BackendServer.exceptions.UsernameEmptyException;
 import com.cuckoo.BackendServer.models.jwt.JwtHolder;
 import com.cuckoo.BackendServer.models.usertype.UserType;
 import com.cuckoo.BackendServer.repository.LoginRepository;
@@ -35,7 +36,7 @@ public class LoginService implements UserDetailsService{
      */
     public UserType getUserInfo(String username){
       if(username == null)
-        throw new InvalidArgumentsException("Username can not be null for getUserInfo at service");
+        throw new UsernameEmptyException("Username can not be null for getUserInfo at service");
 
       return this.dbAPI.getUserInfo(username);
     }

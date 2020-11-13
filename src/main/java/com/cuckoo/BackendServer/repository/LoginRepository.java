@@ -3,6 +3,7 @@ package com.cuckoo.BackendServer.repository;
 import java.util.List;
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
+import com.cuckoo.BackendServer.exceptions.UsernameEmptyException;
 import com.cuckoo.BackendServer.exceptions.WrongPasswordException;
 import com.cuckoo.BackendServer.exceptions.DatabaseException;
 import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
@@ -77,7 +78,7 @@ public class LoginRepository{
 
     public UserType getUserInfo(String username){
         if(username == null)
-          throw new InvalidArgumentsException("username can not be null for getUserInfo");
+          throw new UsernameEmptyException("username can not be null for getUserInfo");
         String sql = "SELECT email, first_name, last_name FROM cuckoo.users WHERE email = ?";
         List<UserType> res = null;
         res = this.jdbcTemplate.query(sql, new Object[] {username}, new UserTypeMapper());
