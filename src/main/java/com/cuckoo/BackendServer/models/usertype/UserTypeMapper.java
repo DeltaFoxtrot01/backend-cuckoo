@@ -10,10 +10,30 @@ import org.springframework.jdbc.core.RowMapper;
 public class UserTypeMapper implements RowMapper<UserType>{
     @Override
     public UserType mapRow(ResultSet rs, int rowNum) throws SQLException {
-        String username = rs.getString("email");
-        String password = rs.getString("pass");
-        String first = rs.getString("first_name");
-        String last = rs.getString("last_name");
+        String username = null;
+        String password = null;
+        String first = null;
+        String last = null;
+        try{
+          username = rs.getString("email");
+        } catch (SQLException e){
+          //continue
+        }
+        try{
+          password = rs.getString("pass");
+        } catch (SQLException e){
+          //continue
+        }
+        try{
+          first = rs.getString("first_name");
+        } catch (SQLException e){
+          //continue
+        }
+        try{
+          last = rs.getString("last_name");
+        } catch (SQLException e){
+          //continue
+        }
         return new UserType(username,password,first,last);
     }
 }

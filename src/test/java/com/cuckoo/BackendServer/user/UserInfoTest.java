@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import com.cuckoo.BackendServer.exceptions.DatabaseException;
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
 import com.cuckoo.BackendServer.models.usertype.UserType;
@@ -22,7 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class CreateUserTest{
+public class UserInfoTest{
 
     private String email;
     private String pass;
@@ -59,12 +58,12 @@ public class CreateUserTest{
         UserType res = null;
 
         try{
-            res = this.dbAPI.getUserByUsername(this.email);
+            res = this.dbAPI.getUserInfo(this.email);
         } catch (UnknownUserException e){
             fail("User should exist");
         }
         assertEquals(this.email, res.getUsername(), "Should return the same email");
-        assertEquals(this.passEncoder.matches(this.pass, res.getPassword()),true, "Should return the same password");        
+        assertEquals(null, res.getPassword(), "Should not return a password");        
         assertEquals(this.first,res.getFirstName(), "Should return the same First Name");
         assertEquals(this.last,res.getLastName(), "Should return the same Last Name");
         user.setPassword(this.pass);
@@ -75,41 +74,10 @@ public class CreateUserTest{
         }
     }
 
-
     @Test
-    void createrUserThatAlreadyExists(){
-        UserType user = new UserType();
-        user.setUsername(this.email);
-        user.setPassword(this.passEncoder.encode(this.pass));
-        user.setFirstName(this.first);
-        user.setLastName(this.last);
+    public void getUserInfoFromNonExistingUser(){
+      assertThrows(UnknownUserException.class, 
+                     () -> this.dbAPI.getUserInfo(this.email),"The user should not be created");
+  }
 
-        try{
-            this.dbAPI.createUserInDatabase(user);
-        } catch (UserAlreadyExistsException e){
-            fail("User should not exist");
-        }
-
-        user.setPassword(this.pass);
-        assertThrows(UserAlreadyExistsException.class,
-        () -> this.dbAPI.createUserInDatabase(user),"User should already exist");
-        
-        try{
-            this.dbAPI.removeUserInDatabase(user);
-        } catch(UnknownUserException e){
-            fail("User should exist");
-        }
-    }
-
-    @Test
-    public void createUserWithInvalidEmail(){
-        UserType user = new UserType();
-        user.setUsername("123");
-        user.setPassword(this.pass);
-        user.setFirstName(this.first);
-        user.setLastName(this.last);
-        
-        assertThrows(DatabaseException.class, 
-                     () -> this.dbAPI.createUserInDatabase(user),"The user should not be created");
-    }
 }

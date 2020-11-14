@@ -28,10 +28,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     private LoginService loginService;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    JwtUtil jwtToken;
+    private JwtUtil jwtToken;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -44,7 +44,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
             .csrf()
             .disable()
             .addFilter(new JwtRequestFilter(this.authenticationManager(),this.loginService,this.jwtToken))
-            .addFilter(new JwtLoginFilter(this.authenticationManager(),"/login/authenticate",this.jwtToken))
+            .addFilter(new JwtLoginFilter(this.authenticationManager(),"/login/authenticate", this.loginService))
             .authorizeRequests()
             .antMatchers("/login/authenticate").permitAll()
             .anyRequest()

@@ -1,6 +1,7 @@
 package com.cuckoo.BackendServer.securitysettings;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import javax.servlet.FilterChain;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.models.jwt.JwtHolder;
 import com.cuckoo.BackendServer.models.usertype.UserType;
+import com.cuckoo.BackendServer.service.LoginService;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -30,13 +32,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
   private AuthenticationManager authenticationManager;
+  private LoginService loginService;
 
-  private JwtUtil jwtTokenUtil;
-
-  public JwtLoginFilter(AuthenticationManager authManager, String url, JwtUtil jwt) {
+  public JwtLoginFilter(AuthenticationManager authManager, String url, LoginService loginService) {
     this.authenticationManager = authManager;
     this.setFilterProcessesUrl(url);
-    this.jwtTokenUtil = jwt;
+    this.loginService = loginService;
   }
 
   @Override
@@ -54,7 +55,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
       e.printStackTrace();
     }
 
-        return null;
+    return null;
     }
 
     @Override
@@ -62,20 +63,10 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
             Authentication authResult) throws IOException, ServletException {
         
         UserType user = (UserType)authResult.getPrincipal();
-        
-        JwtHolder jwt = null;
-        try{
-            jwt = new JwtHolder(this.jwtTokenUtil.generateToken(user));
-            Cookie cookie = new Cookie("sessionToken",jwt.getJwt());
-            cookie.setHttpOnly(true);
-            cookie.setMaxAge(7 * 24 * 60 * 60);
-            cookie.setPath("/");
-    
-            response.addCookie(cookie);
-        }
-        catch(RuntimeException e){
-            e.printStackTrace();
-        }
-        
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getOutputStream().print(this.loginService.createJwtToken(user.getUsername()));
+
+        chain.doFilter(request, response);
     }
 }

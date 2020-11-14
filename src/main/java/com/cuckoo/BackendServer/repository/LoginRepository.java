@@ -1,11 +1,12 @@
-package com.cuckoo.BackendServer.repository.postgresdb;
+package com.cuckoo.BackendServer.repository;
 
 import java.util.List;
-import com.cuckoo.BackendServer.repository.DatabaseAPI;
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
+import com.cuckoo.BackendServer.exceptions.UsernameEmptyException;
 import com.cuckoo.BackendServer.exceptions.WrongPasswordException;
 import com.cuckoo.BackendServer.exceptions.DatabaseException;
+import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
 import com.cuckoo.BackendServer.models.usertype.UserType;
 import com.cuckoo.BackendServer.models.usertype.UserTypeMapper;
 
@@ -16,8 +17,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
 
-@Repository("postgres")
-public class PostgresDBAPI implements DatabaseAPI{
+@Repository
+public class LoginRepository{
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -37,7 +38,6 @@ public class PostgresDBAPI implements DatabaseAPI{
         return true;
     }
     
-    @Override
     public void createUserInDatabase(UserType user) {
         String sql1 = "INSERT INTO cuckoo.users(email,first_name,last_name,pass) VALUES (?,?,?,?);";
 
@@ -51,8 +51,7 @@ public class PostgresDBAPI implements DatabaseAPI{
         }
         
     }
-    
-    @Override
+
     public UserType getUserByUsername(String username){
         String sql = "SELECT email, pass, first_name, last_name FROM cuckoo.users WHERE email = ?";
         List<UserType> res = null;
@@ -63,7 +62,6 @@ public class PostgresDBAPI implements DatabaseAPI{
         return res.get(0);
     }
 
-    @Override
     public void removeUserInDatabase(UserType user) {
         String sql = "DELETE FROM cuckoo.users WHERE email = ?";
         UserType auxUser = this.getUserByUsername(user.getUsername());
@@ -76,6 +74,18 @@ public class PostgresDBAPI implements DatabaseAPI{
         } catch (DataAccessException e){
             throw new DatabaseException("Unable to delete user at removeUserInDatabase");
         }
+    }
+
+    public UserType getUserInfo(String username){
+        if(username == null)
+          throw new UsernameEmptyException("username can not be null for getUserInfo");
+        String sql = "SELECT email, first_name, last_name FROM cuckoo.users WHERE email = ?";
+        List<UserType> res = null;
+        res = this.jdbcTemplate.query(sql, new Object[] {username}, new UserTypeMapper());
+        if(res.isEmpty()){
+            throw new UnknownUserException(username);
+        }
+        return res.get(0);
     }
     
 }
