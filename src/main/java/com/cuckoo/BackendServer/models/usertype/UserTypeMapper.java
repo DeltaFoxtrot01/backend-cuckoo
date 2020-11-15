@@ -1,7 +1,6 @@
 package com.cuckoo.BackendServer.models.usertype;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -11,7 +10,7 @@ import org.springframework.jdbc.core.RowMapper;
 /* row mapper for user*/ 
 public class UserTypeMapper implements RowMapper<UserType>{
     @Override
-    public UserType mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public UserType mapRow(ResultSet rs, int rowNum) {
 
         UUID id = null;
         String username = null;
