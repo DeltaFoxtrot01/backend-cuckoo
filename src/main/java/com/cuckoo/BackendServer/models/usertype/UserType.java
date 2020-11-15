@@ -1,6 +1,7 @@
 package com.cuckoo.BackendServer.models.usertype;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,8 +10,9 @@ User from the database
 Used only for service purposes
 */
 
-public class UserType implements UserDetails{
-    
+public class UserType implements UserDetails {
+
+    private UUID id;
     private String username;
     private String password;
     private String firstName;
@@ -24,7 +26,7 @@ public class UserType implements UserDetails{
         this.username = username;
         this.password = password;
     }
-    
+
     public UserType(String username, String password, String firstName, String lastName){
         this.username = username;
         this.password = password;
@@ -32,10 +34,18 @@ public class UserType implements UserDetails{
         this.lastName = lastName;
     }
 
+    public UserType(UUID id, String username, String password, String firstName, String lastName){
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     @Override
-    public String getUsername(){return this.username;}
+    public String getUsername() { return this.username; }
     @Override
-    public String getPassword(){return this.password;}
+    public String getPassword() { return this.password; }
     
     @Override
     public boolean isAccountNonExpired() {
@@ -66,13 +76,14 @@ public class UserType implements UserDetails{
         // TODO Auto-generated method stub
         return null;
     }
+
+    public UUID getId() { return this.id; }
+    public String getFirstName() { return this.firstName; }
+    public String getLastName() { return this.lastName; }
     
-    public String getFirstName(){return this.firstName;}
-    public String getLastName(){return this.lastName;}
     
-    
-    public void setUsername(String username){this.username = username;}
-    public void setPassword(String password){this.password = password;}  
-    public void setFirstName(String firstName){this.firstName = firstName;}
-    public void setLastName(String lastName){this.lastName = lastName;}
+    public void setUsername(String username) { this.username = username; }
+    public void setPassword(String password) { this.password = password; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 }

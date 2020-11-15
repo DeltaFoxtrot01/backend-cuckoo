@@ -1,9 +1,5 @@
 package com.cuckoo.BackendServer.user;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
 import com.cuckoo.BackendServer.models.usertype.UserType;
@@ -16,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /*test unit to test the creation of users*/
 
@@ -50,24 +48,27 @@ public class UserInfoTest{
         user.setFirstName(this.first);
         user.setLastName(this.last);
 
-        try{
+        try {
             this.dbAPI.createUserInDatabase(user);
         } catch (UserAlreadyExistsException e){
             fail("User should not exist");
         }
+
         UserType res = null;
 
-        try{
+        try {
             res = this.dbAPI.getUserInfo(this.email);
         } catch (UnknownUserException e){
             fail("User should exist");
         }
+
         assertEquals(this.email, res.getUsername(), "Should return the same email");
-        assertEquals(null, res.getPassword(), "Should not return a password");        
+        assertNull(res.getPassword(), "Should not return a password");
         assertEquals(this.first,res.getFirstName(), "Should return the same First Name");
         assertEquals(this.last,res.getLastName(), "Should return the same Last Name");
         user.setPassword(this.pass);
-        try{
+
+        try {
             this.dbAPI.removeUserInDatabase(user);
         } catch(UnknownUserException e){
             fail("User should exist");
