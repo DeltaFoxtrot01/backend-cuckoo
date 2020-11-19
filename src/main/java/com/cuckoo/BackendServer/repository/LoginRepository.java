@@ -6,7 +6,6 @@ import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
 import com.cuckoo.BackendServer.exceptions.UsernameEmptyException;
 import com.cuckoo.BackendServer.exceptions.WrongPasswordException;
 import com.cuckoo.BackendServer.exceptions.DatabaseException;
-import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
 import com.cuckoo.BackendServer.models.usertype.UserType;
 import com.cuckoo.BackendServer.models.usertype.UserTypeMapper;
 
@@ -26,66 +25,70 @@ public class LoginRepository{
     @Autowired
     private PasswordEncoder encoder;
 
-
-
     /*returns true if the user exists or false otherwise*/
-    private boolean doesUserExist(String username){
-        try{
+    private boolean doesUserExist(String username) {
+        try {
             this.getUserByUsername(username);
-        } catch(UnknownUserException e){
+            return true;
+        } catch (UnknownUserException e) {
             return false;
         }
-        return true;
     }
     
     public void createUserInDatabase(UserType user) {
         String sql1 = "INSERT INTO cuckoo.users(email,first_name,last_name,pass) VALUES (?,?,?,?);";
 
-        if(this.doesUserExist(user.getUsername())){
+        if (this.doesUserExist(user.getUsername())) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
-        try{
+
+        try {
             this.jdbcTemplate.update(sql1,user.getUsername(),user.getFirstName(),user.getLastName(),user.getPassword());
-        } catch (DataAccessException e){
+        } catch (DataAccessException e) {
             throw new DatabaseException("Unable insert user on createUserInDatabase");
         }
-        
     }
 
-    public UserType getUserByUsername(String username){
-        String sql = "SELECT email, pass, first_name, last_name FROM cuckoo.users WHERE email = ?";
-        List<UserType> res = null;
-        res = this.jdbcTemplate.query(sql, new Object[] {username}, new UserTypeMapper());
-        if(res.isEmpty()){
-            throw new UnknownUserException(username);
+    private UserType getUser(String key, String query) {
+        List<UserType> res;
+        res = this.jdbcTemplate.query(query, new Object[] {key}, new UserTypeMapper());
+        if (res.isEmpty()) {
+            throw new UnknownUserException(key);
         }
+
         return res.get(0);
+    }
+
+    public UserType getUserByUsername(String username) {
+        String sql = "SELECT id, email, pass, first_name, last_name FROM cuckoo.users WHERE email = ?";
+        return getUser(username, sql);
+    }
+
+    public UserType getUserById(String id) {
+        String sql = "SELECT id, email, pass, first_name, last_name FROM cuckoo.users WHERE id::text = ?";
+        return getUser(id, sql);
+    }
+
+    public UserType getUserInfo(String username) {
+        if (username == null)
+            throw new UsernameEmptyException("username can not be null for getUserInfo");
+
+        String sql = "SELECT id, email, first_name, last_name FROM cuckoo.users WHERE email = ?";
+        return getUser(username, sql);
     }
 
     public void removeUserInDatabase(UserType user) {
-        String sql = "DELETE FROM cuckoo.users WHERE email = ?";
+        String sql = "DELETE FROM cuckoo.users WHERE id::text = ?";
         UserType auxUser = this.getUserByUsername(user.getUsername());
         
-        if(!this.encoder.matches(user.getPassword(), auxUser.getPassword())){
+        if (!this.encoder.matches(user.getPassword(), auxUser.getPassword())) {
             throw new WrongPasswordException(user.getUsername());
         }
-        try{
-            this.jdbcTemplate.update(sql,user.getUsername());
-        } catch (DataAccessException e){
+
+        try {
+            this.jdbcTemplate.update(sql, auxUser.getId().toString());
+        } catch (DataAccessException e) {
             throw new DatabaseException("Unable to delete user at removeUserInDatabase");
         }
     }
-
-    public UserType getUserInfo(String username){
-        if(username == null)
-          throw new UsernameEmptyException("username can not be null for getUserInfo");
-        String sql = "SELECT email, first_name, last_name FROM cuckoo.users WHERE email = ?";
-        List<UserType> res = null;
-        res = this.jdbcTemplate.query(sql, new Object[] {username}, new UserTypeMapper());
-        if(res.isEmpty()){
-            throw new UnknownUserException(username);
-        }
-        return res.get(0);
-    }
-    
 }
