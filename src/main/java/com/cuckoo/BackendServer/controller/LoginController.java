@@ -17,7 +17,7 @@ public class LoginController {
     private LoginService loginService;
 
     /* retrieves user info */
-    @GetMapping("login/userInfo")
+    @GetMapping("login/user-info")
     public UserType getUserInfo(Principal principal) {
         return this.loginService.getUserInfo(principal.getName()); 
     }

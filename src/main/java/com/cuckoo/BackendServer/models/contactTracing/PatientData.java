@@ -21,9 +21,13 @@ public class PatientData {
 
     public PatientData() {}
 
-    public PatientData(Long seed, Long epoch, Long randomNumber, Long infectedEpoch) {
+    public PatientData(Long seed, Long epoch) {
         this.seed = seed;
         this.epoch = epoch;
+    }
+
+    public PatientData(Long seed, Long epoch, Long randomNumber, Long infectedEpoch) {
+        this(seed, epoch);
         this.randomNumber = randomNumber;
         this.infectedEpoch = infectedEpoch;
     }

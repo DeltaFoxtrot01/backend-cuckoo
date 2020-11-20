@@ -1,5 +1,7 @@
 package com.cuckoo.BackendServer.models.contactTracing;
 
+import lombok.Getter;
+
 import java.util.Objects;
 import java.util.Random;
 
@@ -12,6 +14,8 @@ import java.util.Random;
  *  The optimal size for a bucket should be:
  *      - 4 if false positive rate between 0.0001 and 0.002;
  *      - 2 if false positive rate greater than 0.002.
+ *
+ *  The load factor (0.50, 0.84, 0.95, 0.98) increases with the bucket size (1, 2, 4, 8).
  *
  *  The optimal number of bits for the fingerprint can be calculated by:
  *      f = ceil(log(2 * bucketSize / false positive rate) / log(2))
@@ -29,19 +33,23 @@ public class CuckooFilter {
 
     private static final int MAX_NUM_BUCKETS = 31; // optimal is 12
     private static final int MAX_BUCKET_SIZE = 4;
-    private static final int FINGERPRINT_MASK = (int) Math.pow(2, 12) - 1;
+    private static final int MAX_NUM_FINGERPRINTS = (int) Math.pow(2, 12);
     private static final int MAX_NUM_KICKS = 10;
 
     private final int[][] table;
 
+    @Getter
+    private int count;
+
     public CuckooFilter() {
-        table = new int[MAX_NUM_BUCKETS][MAX_BUCKET_SIZE];
+        this.table = new int[MAX_NUM_BUCKETS][MAX_BUCKET_SIZE];
+        clear();
     }
 
     /**
      *  Computes the Rabin fingerprint for a given byte array.
      *  Each byte is singled out and the hash is computed as follows:
-     *      h = (b1 * base^0 + b2 * base^1 + ... + bn * base^(n-1)) % FINGERPRINT_MASK,
+     *      h = (b1 * base^0 + b2 * base^1 + ... + bn * base^(n-1)) % MAX_NUM_FINGERPRINTS,
      *      where:
      *          - bn is the nth byte;
      *          - n is the total of bytes;
@@ -50,14 +58,12 @@ public class CuckooFilter {
      *  Since n can reach high values, exponentiation can result in overflow.
      *  We use the following property to avoid this problem:
      *      (a*b) % n = (a%n * b%n) % n
-     *
-     *  Default value in the table is 0 hence the +1 in the return statement.
      */
     private int getFingerprint(byte[] patientHash) {
         int fp = 0;
         final int base = 256;
         int exp = 0;
-        final int mod = 4099; // first prime number greater than FINGERPRINT_MASK
+        final int mod = 4099; // first prime number greater than MAX_NUM_FINGERPRINTS
 
         for (int b : patientHash) {
             // Optimized exponentiation
@@ -69,7 +75,7 @@ public class CuckooFilter {
             exp++;
         }
 
-        return 1 + (fp % FINGERPRINT_MASK);
+        return Math.floorMod(fp, MAX_NUM_FINGERPRINTS);
     }
 
     /**
@@ -83,14 +89,14 @@ public class CuckooFilter {
         for (int b : patientHash)
             h = b + (h << 6) + (h << 16) - h;
 
-        return h % MAX_NUM_BUCKETS;
+        return Math.floorMod(h, MAX_NUM_BUCKETS);
     }
 
     private int xorHash(int otherBucketHash, int fingerprint) {
-        return otherBucketHash ^ (Objects.hash(fingerprint) % MAX_NUM_BUCKETS);
+        return (otherBucketHash ^ Objects.hash(fingerprint)) % MAX_NUM_BUCKETS;
     }
 
-    public void insert(byte[] patientHash) {
+    public boolean insert(byte[] patientHash) {
         int fp = getFingerprint(patientHash);
         int b1 = hash(patientHash);
         int b2 = xorHash(b1, fp);
@@ -100,24 +106,26 @@ public class CuckooFilter {
         for (int i = 0; i < MAX_BUCKET_SIZE; i++) {
             if (table[b1][i] == fp || table[b2][i] == fp) {
                 // Fingerprint already in filter
-                return;
-            } else if (table[b1][i] == 0) {
+                return true;
+            } else if (table[b1][i] == -1) {
                 bucketWithSlots = b1;
                 emptySlot = i;
-            } else if (table[b2][i] == 0) {
+            } else if (table[b2][i] == -1) {
                 bucketWithSlots = b2;
                 emptySlot = i;
             }
         }
 
+        this.count++;
         if (bucketWithSlots == -1) {
-            kickOutEntries(b1, b2, fp);
-        } else {
-            table[bucketWithSlots][emptySlot] = fp;
+            return kickOutEntry(b1, b2, fp);
         }
+
+        table[bucketWithSlots][emptySlot] = fp;
+        return true;
     }
     
-    private void kickOutEntries(int b1, int b2, int fp) {
+    private boolean kickOutEntry(int b1, int b2, int fp) {
         int b = new Random().nextBoolean() ? b1 : b2;
         for (int k = 0; k < MAX_NUM_KICKS; k++) {
             int i = new Random().nextInt(MAX_BUCKET_SIZE);
@@ -127,12 +135,15 @@ public class CuckooFilter {
             fp = kickedFp;
             b = xorHash(b, kickedFp);
             for (i = 0; i < MAX_BUCKET_SIZE; i++) {
-                if (table[b][i] == 0) {
+                if (table[b][i] == -1) {
                     table[b][i] = fp;
-                    return;
+                    return true;
                 }
             }
         }
+
+        this.count--;
+        return false;
     }
 
     public boolean isPresent(byte[] patientHash) {
@@ -146,5 +157,13 @@ public class CuckooFilter {
         }
         
         return false;
+    }
+
+    public void clear() {
+        for (int b = 0; b < MAX_NUM_BUCKETS; b++)
+            for (int i = 0; i < MAX_BUCKET_SIZE; i++)
+                table[b][i] = -1;
+
+        this.count = 0;
     }
 }
