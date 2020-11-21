@@ -14,7 +14,7 @@ import java.util.Set;
 public class ContactTracingController {
 
     @Autowired
-    ContactTracingService contactTracingService;
+    private ContactTracingService contactTracingService;
 
     @PostMapping(value="/contact-tracing/patient-data", consumes = "application/json; charset=utf-8")
     public ResponseEntity addPatientInformation(@RequestBody Set<PatientData> patientData) {
