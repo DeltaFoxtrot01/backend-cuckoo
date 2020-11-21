@@ -13,3 +13,6 @@ spring.flyway.sqlMigrationPrefix=V
 spring.flyway.sqlMigrationSeparator=__
 spring.flyway.sql-migration-suffixes=.sql
 spring.flyway.validateOnMigrate=true
+
+
+jwt.key=<KEY>

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.cuckoo.BackendServer.models.usertype.UserType;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -18,7 +20,10 @@ Service for the JWT generation and verification
 
 @Service
 public class JwtUtil{
-    private String SECRET_KEY = "themis_jwt_testing_key";
+
+
+    @Value("${jwt.key}")
+    private String SECRET_KEY;
     
     public String extractId(String token){
         return this.extractClaim(token, Claims::getSubject);
