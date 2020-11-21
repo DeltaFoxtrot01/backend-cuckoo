@@ -77,6 +77,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
         config.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         config.setAllowCredentials(true);
         config.setAllowedHeaders(Arrays.asList("*"));
+        config.addExposedHeader("token");
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
