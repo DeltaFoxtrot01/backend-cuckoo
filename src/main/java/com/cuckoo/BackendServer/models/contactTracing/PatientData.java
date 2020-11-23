@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class PatientData {
 
@@ -42,7 +43,7 @@ public class PatientData {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
             messageDigest.update(this.seed.byteValue());
-            byte[] ephID = messageDigest.digest();
+            byte[] ephID = Arrays.copyOfRange(messageDigest.digest(), 0, 16);
 
             messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
             messageDigest.update(ephID);
