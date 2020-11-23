@@ -2,7 +2,7 @@ package com.cuckoo.BackendServer.models.contactTracing;
 
 import lombok.Getter;
 
-import java.util.Objects;
+import java.nio.ByteBuffer;
 import java.util.Random;
 
 /** Cuckoo Filter implementation
@@ -46,59 +46,9 @@ public class CuckooFilter {
         clear();
     }
 
-    /**
-     *  Computes the Rabin fingerprint for a given byte array.
-     *  Each byte is singled out and the hash is computed as follows:
-     *      h = (b1 * base^0 + b2 * base^1 + ... + bn * base^(n-1)) % MAX_NUM_FINGERPRINTS,
-     *      where:
-     *          - bn is the nth byte;
-     *          - n is the total of bytes;
-     *          - base is greater than the largest possible byte value.
-     *
-     *  Since n can reach high values, exponentiation can result in overflow.
-     *  We use the following property to avoid this problem:
-     *      (a*b) % n = (a%n * b%n) % n
-     */
-    private int getFingerprint(byte[] patientHash) {
-        int fp = 0;
-        final int base = 256;
-        int exp = 0;
-        final int mod = 4099; // first prime number greater than MAX_NUM_FINGERPRINTS
-
-        for (int b : patientHash) {
-            // Optimized exponentiation
-            int p = b;
-            for (int e = 0; e < exp; e++)
-                p = (p * base) % mod;
-
-            fp = (fp + p) % mod;
-            exp++;
-        }
-
-        return Math.floorMod(fp, MAX_NUM_FINGERPRINTS);
-    }
-
-    /**
-     *  Algorithm used for sdbm database library.
-     *  The actual function is h(i) = h(i-1) * 65599 + b[i].
-     *  This implementation is a faster computation of said function.
-     *  65599 is a prime number and was obtained after experimenting with different constants.
-     */
-    private int hash(byte[] patientHash) {
-        int h = 0;
-        for (int b : patientHash)
-            h = b + (h << 6) + (h << 16) - h;
-
-        return Math.floorMod(h, MAX_NUM_BUCKETS);
-    }
-
-    private int xorHash(int otherBucketHash, int fingerprint) {
-        return (otherBucketHash ^ Objects.hash(fingerprint)) % MAX_NUM_BUCKETS;
-    }
-
     public boolean insert(byte[] patientHash) {
         int fp = getFingerprint(patientHash);
-        int b1 = hash(patientHash);
+        int b1 = tableHash(patientHash);
         int b2 = xorHash(b1, fp);
 
         int bucketWithSlots = -1;
@@ -147,16 +97,66 @@ public class CuckooFilter {
     }
 
     public boolean isPresent(byte[] patientHash) {
-        int b1 = hash(patientHash);
+        int b1 = tableHash(patientHash);
         int fp = getFingerprint(patientHash);
         int b2 = xorHash(b1, fp);
 
-        for (int i = 0; i < MAX_BUCKET_SIZE; i++) {
+        for (int i = 0; i < MAX_BUCKET_SIZE; i++)
             if (table[b1][i] == fp || table[b2][i] == fp)
                 return true;
-        }
         
         return false;
+    }
+
+    /**
+     *  Computes the Rabin fingerprint for a given byte array.
+     *  Each byte is singled out and the hash is computed as follows:
+     *      h = (b1 * base^0 + b2 * base^1 + ... + bn * base^(n-1)) % MAX_NUM_FINGERPRINTS,
+     *      where:
+     *          - bn is the nth byte;
+     *          - n is the total of bytes;
+     *          - base is greater than the largest possible byte value.
+     *
+     *  Since n can reach high values, exponentiation can result in overflow.
+     *  We use the following property to avoid this problem:
+     *      (a*b) % n = (a%n * b%n) % n
+     */
+    private int getFingerprint(byte[] patientHash) {
+        int fp = 0;
+        final int base = 256;
+        int exp = 0;
+        final int mod = 4099; // first prime number greater than MAX_NUM_FINGERPRINTS
+
+        for (int b : patientHash) {
+            // Optimized exponentiation
+            int p = b;
+            for (int e = 0; e < exp; e++)
+                p = (p * base) % mod;
+
+            fp = (fp + p) % mod;
+            exp++;
+        }
+
+        return Math.floorMod(fp, MAX_NUM_FINGERPRINTS);
+    }
+
+    /**
+     *  Algorithm used for sdbm database library.
+     *  The actual function is h(i) = h(i-1) * 65599 + b[i].
+     *  This implementation is a faster computation of said function.
+     *  65599 is a prime number and was obtained after experimenting with different constants.
+     */
+    private int tableHash(byte[] patientHash) {
+        int h = 0;
+        for (int b : patientHash)
+            h = b + (h << 6) + (h << 16) - h;
+
+        return Math.floorMod(h, MAX_NUM_BUCKETS);
+    }
+
+    private int xorHash(int otherBucketHash, int fingerprint) {
+        byte[] bytes = ByteBuffer.allocate(4).putInt(fingerprint).array();
+        return (otherBucketHash ^ tableHash(bytes)) % MAX_NUM_BUCKETS;
     }
 
     public void clear() {
