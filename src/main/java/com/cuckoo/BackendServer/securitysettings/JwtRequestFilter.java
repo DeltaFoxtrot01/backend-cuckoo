@@ -71,7 +71,7 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernamePassAuthToken); 
             }
         }
-
+        response.setHeader("token", authContent);
         filterChain.doFilter(request,response);
     }
 }

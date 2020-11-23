@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import io.jsonwebtoken.SignatureException;
+
 /*to handle the exceptions as HTTP responses*/
 
 @RestControllerAdvice
@@ -39,5 +41,10 @@ public class ExceptionHandlerController{
     @ExceptionHandler
     public ResponseEntity<?> userAlreadyExistsHandler(UserAlreadyExistsException e){
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> invalidJwt(SignatureException e){
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }
