@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . /app
 EXPOSE 8080/tcp
 
-ADD application-prod.properties /app/src/main/resources
+COPY application-prod.properties /app/src/main/resources
 
 RUN apt update -y
 RUN apt install maven -y
