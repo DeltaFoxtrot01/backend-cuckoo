@@ -90,9 +90,9 @@ Após isto basta executar diretamente o servidor.
   É necessário ter um application-prod.properties e um .env na diretoria principal.
 
   Para fazer build deverá ser executado:
-  - docker build --tag backend-cuckoo --build-arg PROPS_PATH=application-prod.properties . 
+  - docker build --tag backend-cuckoo . 
 
   Para correr é necessário executar:
-  - docker run --env-file .env  backend-cuckoo:latest
+  - docker run --env-file .env -v application-prod.properties:target/classes/ backend-cuckoo:latest
 
   A porta 8080 irá ficar exposta para tcp
