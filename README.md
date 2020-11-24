@@ -84,3 +84,15 @@ Sempre que alguma atualização é feita, a base de dados deve ser reiniciada. P
 - \q
 
 Após isto basta executar diretamente o servidor.
+
+
+  <h2> Executar o docker container </h2>
+  É necessário ter um application-prod.properties e um .env na diretoria principal.
+
+  Para fazer build deverá ser executado:
+  - docker build --tag backend-cuckoo .
+
+  Para correr é necessário executar:
+  - docker run --network="host" --env-file .env  backend-cuckoo:latest
+
+  A porta 8080 irá ficar exposta para tcp

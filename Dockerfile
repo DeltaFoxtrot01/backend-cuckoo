@@ -7,6 +7,8 @@ EXPOSE 8080/tcp
 
 ADD application-prod.properties /app/src/main/resources
 
+RUN apt update -y
+RUN apt install maven -y
 RUN mvn clean package -Pprod -DskipTests
 
 CMD java -jar target/BackendServer-0.0.1-SNAPSHOT.jar
