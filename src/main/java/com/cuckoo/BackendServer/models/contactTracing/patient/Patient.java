@@ -10,6 +10,8 @@ import java.util.Arrays;
 
 public class Patient {
 
+    private final String ENCRYPTION_ALGORITHM = "SHA-256";
+
     @Getter
     private final Long seed;
 
@@ -48,15 +50,15 @@ public class Patient {
      *      EphID = Hash(seed)
      */
     public byte[] ephID() {
-        final String ENCRYPTION_ALGORITHM = "SHA-256";
         try {
-            MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
+            MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
             byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
+            int ephIDByteSize = 16;
 
             messageDigest.update(seedBytes);
-            return Arrays.copyOfRange(messageDigest.digest(), 0, 16);
+            return Arrays.copyOfRange(messageDigest.digest(), 0, ephIDByteSize);
         } catch (NoSuchAlgorithmException e) {
-            throw new UnknownEncryptionAlgorithmException(ENCRYPTION_ALGORITHM);
+            throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
         }
     }
 
@@ -65,9 +67,8 @@ public class Patient {
      *      Hash(EphID || epoch)
      */
     public byte[] patientHash() {
-        final String ENCRYPTION_ALGORITHM = "SHA-256";
         try {
-            MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
+            MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
             byte[] ephID = ephID();
             byte[] epochBytes = ByteBuffer.allocate(8).putLong(this.epoch).array();
 
@@ -75,7 +76,7 @@ public class Patient {
             messageDigest.update(epochBytes);
             return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
-            throw new UnknownEncryptionAlgorithmException(ENCRYPTION_ALGORITHM);
+            throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
         }
     }
 
@@ -84,9 +85,8 @@ public class Patient {
      *      Hash(seed, epoch, randomNumber)
      */
     public byte[] medicHash() {
-        final String ENCRYPTION_ALGORITHM = "SHA-256";
         try {
-            MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
+            MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
             byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
             byte[] epochBytes = ByteBuffer.allocate(8).putLong(this.epoch).array();
             byte[] randomNumberBytes = ByteBuffer.allocate(8).putLong(this.randomNumber).array();
@@ -96,7 +96,7 @@ public class Patient {
             messageDigest.update(randomNumberBytes);
             return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
-            throw new UnknownEncryptionAlgorithmException(ENCRYPTION_ALGORITHM);
+            throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
         }
     }
 
@@ -104,7 +104,10 @@ public class Patient {
         if (epoch == null || infectedEpoch == null)
             throw new EmptyEpochException();
 
-        if (epoch < infectedEpoch || infectedEpoch < 0)
+        if (epoch < 0 || infectedEpoch < 0)
+            throw new NegativeEpochException(epoch, infectedEpoch);
+
+        if (epoch < infectedEpoch)
             throw new InvalidEpochException(epoch, infectedEpoch);
 
     }

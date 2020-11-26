@@ -3,7 +3,9 @@ package com.cuckoo.BackendServer.models.contactTracing.patient;
 import lombok.Getter;
 import lombok.Setter;
 
-public class PatientDto {
+import java.io.Serializable;
+
+public class PatientDto implements Serializable {
 
     @Getter
     @Setter

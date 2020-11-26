@@ -36,13 +36,15 @@ public class CuckooFilter {
     private static final int MAX_NUM_FINGERPRINTS = (int) Math.pow(2, 12);
     private static final int MAX_NUM_KICKS = 10;
 
-    private final int[][] table;
+    private final int[][] table = new int[MAX_NUM_BUCKETS][MAX_BUCKET_SIZE];
+
+    private static final int MAX_BYTE_VAL = 256;
+    private static final int MAX_PRIME = 4099; // first prime number greater than MAX_NUM_FINGERPRINTS
 
     @Getter
     private int count;
 
     public CuckooFilter() {
-        this.table = new int[MAX_NUM_BUCKETS][MAX_BUCKET_SIZE];
         clear();
     }
 
@@ -123,17 +125,15 @@ public class CuckooFilter {
      */
     private int getFingerprint(byte[] patientHash) {
         long fp = 0;
-        final long base = 256;
         long exp = 0;
-        final long mod = 4099; // first prime number greater than MAX_NUM_FINGERPRINTS
 
         for (long b : patientHash) {
             // Optimized exponentiation
             long p = b & 0xff; // Necessary for hashes to be compatible with frontend
             for (long e = 0; e < exp; e++)
-                p = (p * base) % mod;
+                p = (p * MAX_BYTE_VAL) % MAX_PRIME;
 
-            fp = (fp + p) % mod;
+            fp = (fp + p) % MAX_PRIME;
             exp++;
         }
 

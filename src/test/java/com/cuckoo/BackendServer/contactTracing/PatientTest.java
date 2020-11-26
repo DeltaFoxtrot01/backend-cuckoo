@@ -1,9 +1,6 @@
 package com.cuckoo.BackendServer.contactTracing;
 
-import com.cuckoo.BackendServer.exceptions.EmptyEpochException;
-import com.cuckoo.BackendServer.exceptions.EmptyRandomNumberException;
-import com.cuckoo.BackendServer.exceptions.EmptySeedException;
-import com.cuckoo.BackendServer.exceptions.InvalidEpochException;
+import com.cuckoo.BackendServer.exceptions.*;
 import com.cuckoo.BackendServer.models.contactTracing.patient.Patient;
 import com.cuckoo.BackendServer.models.contactTracing.patient.PatientDto;
 import org.junit.jupiter.api.BeforeAll;
@@ -48,7 +45,7 @@ public class PatientTest {
         dto.setEpoch(null);
         assertThrows(EmptyEpochException.class, () -> new Patient(dto), "Should not accept a null epoch");
         dto.setEpoch(-1L);
-        assertThrows(InvalidEpochException.class, () -> new Patient(dto), "Should not accept a negative epoch");
+        assertThrows(NegativeEpochException.class, () -> new Patient(dto), "Should not accept a negative epoch");
         dto.setEpoch(infectedEpoch - 1);
         assertThrows(InvalidEpochException.class, () -> new Patient(dto), "Should not accept an epoch lower than infected epoch");
         dto.setEpoch(epoch);
@@ -60,7 +57,7 @@ public class PatientTest {
         dto.setInfectedEpoch(null);
         assertThrows(EmptyEpochException.class, () -> new Patient(dto), "Should not accept a null infected epoch");
         dto.setInfectedEpoch(-2L);
-        assertThrows(InvalidEpochException.class, () -> new Patient(dto), "Should not accept a negative infected epoch");
+        assertThrows(NegativeEpochException.class, () -> new Patient(dto), "Should not accept a negative infected epoch");
         dto.setInfectedEpoch(infectedEpoch);
     }
 
