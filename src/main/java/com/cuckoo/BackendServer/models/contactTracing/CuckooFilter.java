@@ -122,15 +122,15 @@ public class CuckooFilter {
      *      (a*b) % n = (a%n * b%n) % n
      */
     private int getFingerprint(byte[] patientHash) {
-        int fp = 0;
-        final int base = 256;
-        int exp = 0;
-        final int mod = 4099; // first prime number greater than MAX_NUM_FINGERPRINTS
+        long fp = 0;
+        final long base = 256;
+        long exp = 0;
+        final long mod = 4099; // first prime number greater than MAX_NUM_FINGERPRINTS
 
-        for (int b : patientHash) {
+        for (long b : patientHash) {
             // Optimized exponentiation
-            int p = b;
-            for (int e = 0; e < exp; e++)
+            long p = b & 0xff; // Necessary for hashes to be compatible with frontend
+            for (long e = 0; e < exp; e++)
                 p = (p * base) % mod;
 
             fp = (fp + p) % mod;
@@ -147,15 +147,14 @@ public class CuckooFilter {
      *  65599 is a prime number and was obtained after experimenting with different constants.
      */
     private int tableHash(byte[] patientHash) {
-        int h = 0;
-        for (int b : patientHash)
-            h = b + (h << 6) + (h << 16) - h;
-
+        long h = 0;
+        for (long b : patientHash)
+            h = (b & 0xff) + (h << 6) + (h << 16) - h;
         return Math.floorMod(h, MAX_NUM_BUCKETS);
     }
 
     private int xorHash(int otherBucketHash, int fingerprint) {
-        byte[] bytes = ByteBuffer.allocate(4).putInt(fingerprint).array();
+        byte[] bytes = ByteBuffer.allocate(8).putLong(fingerprint).array();
         return (otherBucketHash ^ tableHash(bytes)) % MAX_NUM_BUCKETS;
     }
 

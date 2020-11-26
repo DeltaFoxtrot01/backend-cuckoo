@@ -3,6 +3,7 @@ package com.cuckoo.BackendServer.models.contactTracing;
 import com.cuckoo.BackendServer.exceptions.UnknownEncryptionAlgorithmException;
 import lombok.Getter;
 
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -35,19 +36,35 @@ public class PatientData {
     }
 
     /**
-     *  Computes for this patient information the hash that is stored by other patients:
-     *      Hash(EphID || epoch) where EphID = Hash(seed)
+     *  Computes for this patient information the EphID:
+     *      EphID = Hash(seed)
      */
-    public byte[] patientHash() {
-        final String ENCRYPTION_ALGORITHM = "SHA3-256";
+    public byte[] ephID() {
+        final String ENCRYPTION_ALGORITHM = "SHA-256";
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
-            messageDigest.update(this.seed.byteValue());
-            byte[] ephID = Arrays.copyOfRange(messageDigest.digest(), 0, 16);
+            byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
 
-            messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
+            messageDigest.update(seedBytes);
+            return Arrays.copyOfRange(messageDigest.digest(), 0, 16);
+        } catch (NoSuchAlgorithmException e) {
+            throw new UnknownEncryptionAlgorithmException(ENCRYPTION_ALGORITHM);
+        }
+    }
+
+    /**
+     *  Computes for this patient information the hash that is stored by other patients:
+     *      Hash(EphID || epoch)
+     */
+    public byte[] patientHash() {
+        final String ENCRYPTION_ALGORITHM = "SHA-256";
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
+            byte[] ephID = ephID();
+            byte[] epochBytes = ByteBuffer.allocate(8).putLong(this.epoch).array();
+
             messageDigest.update(ephID);
-            messageDigest.update(this.epoch.byteValue());
+            messageDigest.update(epochBytes);
             return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(ENCRYPTION_ALGORITHM);
@@ -59,12 +76,16 @@ public class PatientData {
      *      Hash(seed, epoch, randomNumber)
      */
     public byte[] medicHash() {
-        final String ENCRYPTION_ALGORITHM = "SHA3-256";
+        final String ENCRYPTION_ALGORITHM = "SHA-256";
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPTION_ALGORITHM);
-            messageDigest.update(this.seed.byteValue());
-            messageDigest.update(this.epoch.byteValue());
-            messageDigest.update(this.randomNumber.byteValue());
+            byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
+            byte[] epochBytes = ByteBuffer.allocate(8).putLong(this.epoch).array();
+            byte[] randomNumberBytes = ByteBuffer.allocate(8).putLong(this.randomNumber).array();
+
+            messageDigest.update(seedBytes);
+            messageDigest.update(epochBytes);
+            messageDigest.update(randomNumberBytes);
             return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(ENCRYPTION_ALGORITHM);
