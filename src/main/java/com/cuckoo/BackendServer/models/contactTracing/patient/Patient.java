@@ -1,6 +1,6 @@
-package com.cuckoo.BackendServer.models.contactTracing;
+package com.cuckoo.BackendServer.models.contactTracing.patient;
 
-import com.cuckoo.BackendServer.exceptions.UnknownEncryptionAlgorithmException;
+import com.cuckoo.BackendServer.exceptions.*;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
@@ -8,13 +8,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public class PatientData {
+public class Patient {
 
     @Getter
-    private Long seed;
+    private final Long seed;
 
     @Getter
-    private Long epoch;
+    private final Long epoch;
 
     @Getter
     private Long randomNumber;
@@ -22,17 +22,25 @@ public class PatientData {
     @Getter
     private Long infectedEpoch;
 
-    public PatientData() {}
-
-    public PatientData(Long seed, Long epoch) {
+    public Patient(Long seed, Long epoch) {
+        checkSeed(seed);
+        checkEpochs(epoch, epoch); // Dank yet effective
         this.seed = seed;
         this.epoch = epoch;
     }
 
-    public PatientData(Long seed, Long epoch, Long randomNumber, Long infectedEpoch) {
-        this(seed, epoch);
+    public Patient(Long seed, Long epoch, Long randomNumber, Long infectedEpoch) {
+        checkSeed(seed);
+        checkEpochs(epoch, infectedEpoch);
+        checkRandomNumber(randomNumber);
+        this.seed = seed;
+        this.epoch = epoch;
         this.randomNumber = randomNumber;
         this.infectedEpoch = infectedEpoch;
+    }
+
+    public Patient(PatientDto data) {
+        this(data.getSeed(), data.getEpoch(), data.getRandomNumber(), data.getInfectedEpoch());
     }
 
     /**
@@ -90,5 +98,24 @@ public class PatientData {
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(ENCRYPTION_ALGORITHM);
         }
+    }
+
+    private void checkEpochs(Long epoch, Long infectedEpoch) {
+        if (epoch == null || infectedEpoch == null)
+            throw new EmptyEpochException();
+
+        if (epoch < infectedEpoch || infectedEpoch < 0)
+            throw new InvalidEpochException(epoch, infectedEpoch);
+
+    }
+
+    private void checkSeed(Long seed) {
+        if (seed == null)
+            throw new EmptySeedException();
+    }
+
+    private void checkRandomNumber(Long randomNumber) {
+        if (randomNumber == null)
+            throw new EmptyRandomNumberException();
     }
 }

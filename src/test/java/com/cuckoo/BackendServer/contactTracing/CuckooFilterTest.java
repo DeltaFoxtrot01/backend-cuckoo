@@ -1,7 +1,7 @@
 package com.cuckoo.BackendServer.contactTracing;
 
 import com.cuckoo.BackendServer.models.contactTracing.CuckooFilter;
-import com.cuckoo.BackendServer.models.contactTracing.PatientData;
+import com.cuckoo.BackendServer.models.contactTracing.patient.Patient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ public class CuckooFilterTest {
     public void insertOneHash() {
         Long seed = new Random(11).nextLong();
         Long epoch = 1L;
-        PatientData data = new PatientData(seed, epoch);
+        Patient data = new Patient(seed, epoch);
         byte[] patientHash = data.patientHash();
 
         filter.insert(patientHash);
@@ -44,7 +44,7 @@ public class CuckooFilterTest {
     public void insertRepeatedHash() {
         Long seed = new Random(22).nextLong();
         Long epoch = 1L;
-        PatientData data = new PatientData(seed, epoch);
+        Patient data = new Patient(seed, epoch);
         byte[] patientHash = data.patientHash();
 
         filter.insert(patientHash);
@@ -57,16 +57,16 @@ public class CuckooFilterTest {
     @Test
     public void insertManyHashes() {
         List<Long[]> seedsAndEpochs = new ArrayList<>();
-        for (long i = 0L; i < MAX_NUM_ENTRIES; i++) {
+        for (Long i = 0L; i < MAX_NUM_ENTRIES; i++) {
             seedsAndEpochs.add(new Long[] { new Random(69).nextLong(), i });
         }
 
-        List<PatientData> data = seedsAndEpochs.stream()
+        List<Patient> data = seedsAndEpochs.stream()
                 .map(seedAndEpoch ->
-                        new PatientData(seedAndEpoch[0], seedAndEpoch[1]))
+                        new Patient(seedAndEpoch[0], seedAndEpoch[1]))
                 .collect(Collectors.toList());
 
-        List<byte[]> hashes = data.stream().map(PatientData::patientHash).collect(Collectors.toList());
+        List<byte[]> hashes = data.stream().map(Patient::patientHash).collect(Collectors.toList());
         hashes.forEach(filter::insert);
         double count = hashes.stream().mapToInt(h -> filter.isPresent(h) ? 1 : 0).sum();
 
@@ -78,13 +78,13 @@ public class CuckooFilterTest {
     public void hashNotPresent() {
         Long seed = new Random(33).nextLong();
         Long epoch = 3L;
-        PatientData data = new PatientData(seed, epoch);
+        Patient data = new Patient(seed, epoch);
         byte[] patientHash = data.patientHash();
 
         Long otherSeed = new Random(44).nextLong();
         Long otherEpoch = 4L;
-        PatientData otherSeedData = new PatientData(otherSeed, epoch);
-        PatientData otherEpochData = new PatientData(seed, otherEpoch);
+        Patient otherSeedData = new Patient(otherSeed, epoch);
+        Patient otherEpochData = new Patient(seed, otherEpoch);
         byte[] otherSeedPatientHash = otherSeedData.patientHash();
         byte[] otherEpochPatientHash = otherEpochData.patientHash();
 

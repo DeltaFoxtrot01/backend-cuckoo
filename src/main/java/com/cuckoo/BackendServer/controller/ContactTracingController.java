@@ -1,6 +1,6 @@
 package com.cuckoo.BackendServer.controller;
 
-import com.cuckoo.BackendServer.models.contactTracing.PatientData;
+import com.cuckoo.BackendServer.models.contactTracing.patient.PatientDto;
 import com.cuckoo.BackendServer.service.ContactTracingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class ContactTracingController {
     private ContactTracingService contactTracingService;
 
     @PostMapping(value="/contact-tracing/patient-data", consumes = "application/json; charset=utf-8")
-    public ResponseEntity addPatientInformation(@RequestBody Set<PatientData> patientData) {
+    public ResponseEntity addPatientInformation(@RequestBody Set<PatientDto> patientData) {
         contactTracingService.addPatientInformation(patientData);
         return ResponseEntity.ok().build();
     }
