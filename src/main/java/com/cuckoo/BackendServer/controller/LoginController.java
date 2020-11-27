@@ -6,6 +6,7 @@ import com.cuckoo.BackendServer.service.LoginService;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +25,9 @@ public class LoginController {
 
     /* end point for authentication */
     @PostMapping("login/authenticate")
-    public void createAuthToken() {
+    public ResponseEntity<Void> createAuthToken() {
       //authentication endpoint
+      return ResponseEntity.ok().build();
     }
 
 }

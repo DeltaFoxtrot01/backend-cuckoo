@@ -57,10 +57,10 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
             Authentication authResult) throws IOException, ServletException {
         
         UserType user = (UserType) authResult.getPrincipal();
-
+        String token = "Bearer ";
+        token = token + this.loginService.createJwtToken(user.getUsername());
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getOutputStream().print(this.loginService.createJwtToken(user.getUsername()));
-
+        response.setHeader("token", token);
         chain.doFilter(request, response);
     }
 }
