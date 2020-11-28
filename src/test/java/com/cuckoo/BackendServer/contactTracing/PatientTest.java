@@ -6,18 +6,23 @@ import com.cuckoo.BackendServer.models.contactTracing.patient.PatientDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.Base64;
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PatientTest {
 
-    private static Long seed;
+    private static final byte[] seed = new byte[32];
+    private static String encodedSeed;
     private static Long epoch;
     private static Long randomNumber;
     private static Long infectedEpoch;
 
     @BeforeAll
     static void setup() {
-        seed = 345239L;
+        new Random(99).nextBytes(seed);
+        encodedSeed = Base64.getEncoder().encodeToString(seed);
         epoch = 976564L;
         randomNumber = 5201976L;
         infectedEpoch = 976552L;
@@ -25,10 +30,10 @@ public class PatientTest {
 
     @Test
     public void createPatientFromDto() {
-        PatientDto dto = new PatientDto(seed, epoch, randomNumber, infectedEpoch);
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
         Patient data = new Patient(dto);
 
-        assertEquals(data.getSeed(), seed, "Should contain the correct seed");
+        assertArrayEquals(data.getSeed(), seed, "Should contain the correct seed");
         assertEquals(data.getEpoch(), epoch, "Should contain the correct epoch");
         assertEquals(data.getRandomNumber(), randomNumber, "Should contain the correct random number");
         assertEquals(data.getInfectedEpoch(), infectedEpoch, "Should contain the correct infected epoch");
@@ -36,11 +41,11 @@ public class PatientTest {
     
     @Test
     public void invalidInputs() {
-        PatientDto dto = new PatientDto(seed, epoch, randomNumber, infectedEpoch);
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
 
-        dto.setSeed(null);
+        dto.setEncodedSeed(null);
         assertThrows(EmptySeedException.class, () -> new Patient(dto), "Should not accept a null seed");
-        dto.setSeed(seed);
+        dto.setEncodedSeed(encodedSeed);
 
         dto.setEpoch(null);
         assertThrows(EmptyEpochException.class, () -> new Patient(dto), "Should not accept a null epoch");
@@ -67,21 +72,21 @@ public class PatientTest {
 
     @Test
     public void generateEphID(){
-        Patient data = new Patient(seed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(encodedSeed, epoch, randomNumber, infectedEpoch);
         byte[] id = data.ephID();
         printBytes(id, "EphID");
     }
 
     @Test
     public void generatePatientHash() {
-        Patient data = new Patient(seed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(encodedSeed, epoch, randomNumber, infectedEpoch);
         byte[] patientHash = data.patientHash();
         printBytes(patientHash, "Patient Hash");
     }
 
     @Test
     public void generateMedicHash() {
-        Patient data = new Patient(seed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(encodedSeed, epoch, randomNumber, infectedEpoch);
         byte[] medicHash = data.medicHash();
         printBytes(medicHash, "Medic Hash");
     }

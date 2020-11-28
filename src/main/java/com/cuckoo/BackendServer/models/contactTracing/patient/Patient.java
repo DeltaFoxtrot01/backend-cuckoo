@@ -7,13 +7,14 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Base64;
 
 public class Patient {
 
     private final String ENCRYPTION_ALGORITHM = "SHA-256";
 
     @Getter
-    private final Long seed;
+    private final byte[] seed;
 
     @Getter
     private final Long epoch;
@@ -24,25 +25,25 @@ public class Patient {
     @Getter
     private Long infectedEpoch;
 
-    public Patient(Long seed, Long epoch) {
-        checkSeed(seed);
+    public Patient(String encodedSeed, Long epoch) {
+        checkEncodedSeed(encodedSeed);
         checkEpochs(epoch, epoch); // Dank yet effective
-        this.seed = seed;
+        this.seed = Base64.getDecoder().decode(encodedSeed);
         this.epoch = epoch;
     }
 
-    public Patient(Long seed, Long epoch, Long randomNumber, Long infectedEpoch) {
-        checkSeed(seed);
+    public Patient(String encodedSeed, Long epoch, Long randomNumber, Long infectedEpoch) {
+        checkEncodedSeed(encodedSeed);
         checkEpochs(epoch, infectedEpoch);
         checkRandomNumber(randomNumber);
-        this.seed = seed;
+        this.seed = Base64.getDecoder().decode(encodedSeed);
         this.epoch = epoch;
         this.randomNumber = randomNumber;
         this.infectedEpoch = infectedEpoch;
     }
 
     public Patient(PatientDto data) {
-        this(data.getSeed(), data.getEpoch(), data.getRandomNumber(), data.getInfectedEpoch());
+        this(data.getEncodedSeed(), data.getEpoch(), data.getRandomNumber(), data.getInfectedEpoch());
     }
 
     /**
@@ -52,10 +53,9 @@ public class Patient {
     public byte[] ephID() {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
-            byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
             int ephIDByteSize = 16;
 
-            messageDigest.update(seedBytes);
+            messageDigest.update(this.seed);
             return Arrays.copyOfRange(messageDigest.digest(), 0, ephIDByteSize);
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
@@ -87,11 +87,10 @@ public class Patient {
     public byte[] medicHash() {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
-            byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
             byte[] epochBytes = ByteBuffer.allocate(8).putLong(this.epoch).array();
             byte[] randomNumberBytes = ByteBuffer.allocate(8).putLong(this.randomNumber).array();
 
-            messageDigest.update(seedBytes);
+            messageDigest.update(this.seed);
             messageDigest.update(epochBytes);
             messageDigest.update(randomNumberBytes);
             return messageDigest.digest();
@@ -112,8 +111,8 @@ public class Patient {
 
     }
 
-    private void checkSeed(Long seed) {
-        if (seed == null)
+    private void checkEncodedSeed(String encodedSeed) {
+        if (encodedSeed == null || encodedSeed.isEmpty())
             throw new EmptySeedException();
     }
 

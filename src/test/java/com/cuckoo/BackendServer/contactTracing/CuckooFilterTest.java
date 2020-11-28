@@ -22,16 +22,21 @@ public class CuckooFilterTest {
     private static final int MAX_NUM_ENTRIES = 42;
     private static final double MIN_LOAD_FACTOR = 0.95;
 
+    private static final byte[] seed = new byte[32];
+    private static String encodedSeed;
+    private static Long epoch;
+
     @BeforeAll
     static void setup() {
         filter = new CuckooFilter();
+        new Random(99).nextBytes(seed);
+        encodedSeed = Base64.getEncoder().encodeToString(seed);
+        epoch = 33L;
     }
 
     @Test
     public void insertOneHash() {
-        Long seed = new Random(11).nextLong();
-        Long epoch = 1L;
-        Patient data = new Patient(seed, epoch);
+        Patient data = new Patient(encodedSeed, epoch);
         byte[] patientHash = data.patientHash();
 
         filter.insert(patientHash);
@@ -42,9 +47,7 @@ public class CuckooFilterTest {
 
     @Test
     public void insertRepeatedHash() {
-        Long seed = new Random(22).nextLong();
-        Long epoch = 1L;
-        Patient data = new Patient(seed, epoch);
+        Patient data = new Patient(encodedSeed, epoch);
         byte[] patientHash = data.patientHash();
 
         filter.insert(patientHash);
@@ -56,15 +59,13 @@ public class CuckooFilterTest {
 
     @Test
     public void insertManyHashes() {
-        List<Long[]> seedsAndEpochs = new ArrayList<>();
-        for (Long i = 0L; i < MAX_NUM_ENTRIES; i++) {
-            seedsAndEpochs.add(new Long[] { new Random(69).nextLong(), i });
+        List<Patient> data = new ArrayList<>();
+        for (long i = 0L; i < MAX_NUM_ENTRIES; i++) {
+            byte[] randomSeed = new byte[32];
+            new Random().nextBytes(randomSeed);
+            String randomEncodedSeed = Base64.getEncoder().encodeToString(randomSeed);
+            data.add(new Patient(randomEncodedSeed, i));
         }
-
-        List<Patient> data = seedsAndEpochs.stream()
-                .map(seedAndEpoch ->
-                        new Patient(seedAndEpoch[0], seedAndEpoch[1]))
-                .collect(Collectors.toList());
 
         List<byte[]> hashes = data.stream().map(Patient::patientHash).collect(Collectors.toList());
         hashes.forEach(filter::insert);
@@ -76,15 +77,16 @@ public class CuckooFilterTest {
 
     @Test
     public void hashNotPresent() {
-        Long seed = new Random(33).nextLong();
-        Long epoch = 3L;
-        Patient data = new Patient(seed, epoch);
+        Patient data = new Patient(encodedSeed, epoch);
         byte[] patientHash = data.patientHash();
 
-        Long otherSeed = new Random(44).nextLong();
-        Long otherEpoch = 4L;
-        Patient otherSeedData = new Patient(otherSeed, epoch);
-        Patient otherEpochData = new Patient(seed, otherEpoch);
+        byte[] otherSeed = new byte[32];
+        new Random(100).nextBytes(otherSeed);
+        String otherEncodedSeed = Base64.getEncoder().encodeToString(otherSeed);
+        Long otherEpoch = 34L;
+
+        Patient otherSeedData = new Patient(otherEncodedSeed, epoch);
+        Patient otherEpochData = new Patient(encodedSeed, otherEpoch);
         byte[] otherSeedPatientHash = otherSeedData.patientHash();
         byte[] otherEpochPatientHash = otherEpochData.patientHash();
 
