@@ -1,22 +1,16 @@
 package com.cuckoo.BackendServer.controller;
 
-import com.cuckoo.BackendServer.exceptions.DatabaseException;
-import com.cuckoo.BackendServer.exceptions.PassWordWeakException;
-import com.cuckoo.BackendServer.exceptions.UnknownUserException;
-import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
-import com.cuckoo.BackendServer.exceptions.WrongPasswordException;
+import com.cuckoo.BackendServer.exceptions.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import io.jsonwebtoken.SignatureException;
-
 /*to handle the exceptions as HTTP responses*/
 
 @RestControllerAdvice
-public class ExceptionHandlerController{
+public class ExceptionHandlerController {
 
     @ExceptionHandler
     public ResponseEntity<?> wrongPasswordHandler(WrongPasswordException e){
@@ -34,7 +28,7 @@ public class ExceptionHandlerController{
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> unknowUserHandler(UnknownUserException e){
+    public ResponseEntity<?> unknownUserHandler(UnknownUserException e){
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -44,7 +38,7 @@ public class ExceptionHandlerController{
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> invalidJwt(SignatureException e){
-      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<?> contactTracingException(EmptySeedException e) {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 }

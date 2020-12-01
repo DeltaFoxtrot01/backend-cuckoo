@@ -16,7 +16,7 @@ public class ContactTracingController {
     @Autowired
     private ContactTracingService contactTracingService;
 
-    @PostMapping(value="/contact-tracing/patient-data", consumes = "application/json; charset=utf-8")
+    @PostMapping(value="/contact-tracing/patient", consumes = "application/json; charset=utf-8")
     public ResponseEntity addPatientInformation(@RequestBody Set<PatientDto> patientData) {
         contactTracingService.addPatientInformation(patientData);
         return ResponseEntity.ok().build();

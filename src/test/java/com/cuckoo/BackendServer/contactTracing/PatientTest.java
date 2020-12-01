@@ -45,6 +45,8 @@ public class PatientTest {
 
         dto.setEncodedSeed(null);
         assertThrows(EmptySeedException.class, () -> new Patient(dto), "Should not accept a null seed");
+        dto.setEncodedSeed("");
+        assertThrows(EmptySeedException.class, () -> new Patient(dto), "Should not accept an empty seed");
         dto.setEncodedSeed(encodedSeed);
 
         dto.setEpoch(null);
