@@ -2,6 +2,7 @@ package com.cuckoo.BackendServer.contactTracing;
 
 import com.cuckoo.BackendServer.models.contactTracing.CuckooFilter;
 import com.cuckoo.BackendServer.models.contactTracing.patient.Patient;
+import com.cuckoo.BackendServer.models.contactTracing.patient.PatientDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,35 +26,44 @@ public class CuckooFilterTest {
     private static final byte[] seed = new byte[32];
     private static String encodedSeed;
     private static Long epoch;
+    private static Long randomNumber;
+    private static Long infectedEpoch;
 
     @BeforeAll
     static void setup() {
         filter = new CuckooFilter();
-        new Random(99).nextBytes(seed);
+        Random random = new Random(99);
+        random.nextBytes(seed);
         encodedSeed = Base64.getEncoder().encodeToString(seed);
         epoch = 33L;
+        randomNumber = random.nextLong();
+        infectedEpoch = 30L;
     }
 
     @Test
     public void insertOneHash() {
-        Patient data = new Patient(encodedSeed, epoch);
-        byte[] patientHash = data.patientHash();
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(dto);
+        data.insertData(dto);
 
-        filter.insert(patientHash);
+        List<byte[]> hashes = data.patientHashes();
+        hashes.forEach(filter::insert);
 
-        assertTrue(filter.isPresent(patientHash), "Hash fingerprint should be present");
+        assertTrue(filter.isPresent(hashes.get(0)), "Hash fingerprint should be present");
         assertEquals(filter.getCount(), 1, "There should be only one fingerprint in the filter");
     }
 
     @Test
     public void insertRepeatedHash() {
-        Patient data = new Patient(encodedSeed, epoch);
-        byte[] patientHash = data.patientHash();
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(dto);
+        data.insertData(dto);
 
-        filter.insert(patientHash);
-        filter.insert(patientHash);
+        List<byte[]> hashes = data.patientHashes();
+        hashes.forEach(filter::insert);
+        hashes.forEach(filter::insert);
 
-        assertTrue(filter.isPresent(patientHash), "Hash fingerprint should be present");
+        assertTrue(filter.isPresent(hashes.get(0)), "Hash fingerprint should be present");
         assertEquals(filter.getCount(), 1, "There should be only one fingerprint in the filter");
     }
 
@@ -64,10 +74,15 @@ public class CuckooFilterTest {
             byte[] randomSeed = new byte[32];
             new Random().nextBytes(randomSeed);
             String randomEncodedSeed = Base64.getEncoder().encodeToString(randomSeed);
-            data.add(new Patient(randomEncodedSeed, i));
+            PatientDto dto = new PatientDto(randomEncodedSeed, i + 1, 42 * i + 5, i);
+            Patient patient = new Patient(dto);
+            patient.insertData(dto);
+            data.add(patient);
         }
 
-        List<byte[]> hashes = data.stream().map(Patient::patientHash).collect(Collectors.toList());
+        List<byte[]> hashes = data.stream()
+                .flatMap(patient -> patient.patientHashes().stream())
+                .collect(Collectors.toList());
         hashes.forEach(filter::insert);
         double count = hashes.stream().mapToInt(h -> filter.isPresent(h) ? 1 : 0).sum();
 
@@ -77,25 +92,31 @@ public class CuckooFilterTest {
 
     @Test
     public void hashNotPresent() {
-        Patient data = new Patient(encodedSeed, epoch);
-        byte[] patientHash = data.patientHash();
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(dto);
+        data.insertData(dto);
+        List<byte[]> hashes = data.patientHashes();
+        filter.insert(hashes.get(0));
 
         byte[] otherSeed = new byte[32];
         new Random(100).nextBytes(otherSeed);
         String otherEncodedSeed = Base64.getEncoder().encodeToString(otherSeed);
         Long otherEpoch = 34L;
 
-        Patient otherSeedData = new Patient(otherEncodedSeed, epoch);
-        Patient otherEpochData = new Patient(encodedSeed, otherEpoch);
-        byte[] otherSeedPatientHash = otherSeedData.patientHash();
-        byte[] otherEpochPatientHash = otherEpochData.patientHash();
+        PatientDto otherSeedDto = new PatientDto(otherEncodedSeed, epoch, randomNumber, infectedEpoch);
+        Patient otherSeedData = new Patient(otherSeedDto);
+        otherSeedData.insertData(otherSeedDto);
+        List<byte[]> otherSeedHashes = otherSeedData.patientHashes();
 
-        filter.insert(patientHash);
+        PatientDto otherEpochDto = new PatientDto(encodedSeed, otherEpoch, randomNumber, infectedEpoch);
+        Patient otherEpochData = new Patient(otherEpochDto);
+        otherEpochData.insertData(otherEpochDto);
+        List<byte[]> otherEpochHashes = otherEpochData.patientHashes();
 
-        assertTrue(filter.isPresent(patientHash), "Hash fingerprint should be present");
+        assertTrue(filter.isPresent(hashes.get(0)), "Hash fingerprint should be present");
         assertEquals(filter.getCount(), 1, "There should be only one fingerprint in the filter");
-        assertFalse(filter.isPresent(otherSeedPatientHash), "Hash fingerprint should not be present");
-        assertFalse(filter.isPresent(otherEpochPatientHash), "Hash fingerprint should not be present");
+        assertFalse(filter.isPresent(otherSeedHashes.get(0)), "Hash fingerprint should not be present");
+        assertFalse(filter.isPresent(otherEpochHashes.get(0)), "Hash fingerprint should not be present");
     }
 
     @AfterEach
