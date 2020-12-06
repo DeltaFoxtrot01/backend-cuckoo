@@ -131,7 +131,7 @@ public class AuthTest {
   }
 
   @Test
-  public void accessEndpointWithAlgorithmDiferentAlgorithm() throws URISyntaxException {
+  public void accessEndpointWithDiferentAlgorithm() throws URISyntaxException {
     String token = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiIwZjEwOWI5ZS02MTM3LTQ1MzctOGVhYy0zNjg1NTMyMTU4NzUiLCJleHAiOjMzMTk1NzMzMjE0LCJpYXQiOjE2MDY2NTU3NjcsImp0aSI6IjRjNDIxMzNjLTlkZTUtNGIxZS1iYzE5LWQ5YjFhMGFlZDU0YiJ9.";
 
     String baseUserUrl = host + this.port + userEndpoint;

@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 
 /*
@@ -76,7 +77,7 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
               }
           }
         }
-        catch(SignatureException | ExpiredJwtException e){
+        catch(SignatureException | ExpiredJwtException | UnsupportedJwtException e){
           filterChain.doFilter(request, response);
           return ;
         }
