@@ -3,6 +3,8 @@ package com.cuckoo.BackendServer.models.usertype;
 import java.util.Collection;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 /* 
@@ -10,6 +12,7 @@ User from the database
 Used only for service purposes
 */
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserType implements UserDetails {
 
     private UUID id;
