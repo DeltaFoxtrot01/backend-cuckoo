@@ -17,6 +17,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+
 
 /*
 Extra spring security filter to add a verification filter for the JWT
@@ -57,25 +61,25 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
             filterChain.doFilter(request, response);
             return ;
         }
+        try{
+          id = jwtUtil.extractId(jwt);
 
-        try {
-            id = jwtUtil.extractId(jwt);
-        } catch (SignatureException e) {
-            filterChain.doFilter(request, response);
-            return ;
+          if (id != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+              UserType userType = this.loginService.loadUserById(id);
+
+              if (this.jwtUtil.validateToken(jwt, userType)) {
+                  UsernamePasswordAuthenticationToken usernamePassAuthToken =
+                          new UsernamePasswordAuthenticationToken(userType, null, userType.getAuthorities());
+
+                  usernamePassAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                  SecurityContextHolder.getContext().setAuthentication(usernamePassAuthToken); 
+              }
+          }
         }
-
-        if (id != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserType userType = this.loginService.loadUserById(id);
-
-            if (this.jwtUtil.validateToken(jwt, userType)) {
-                UsernamePasswordAuthenticationToken usernamePassAuthToken =
-                        new UsernamePasswordAuthenticationToken(userType, null, userType.getAuthorities());
-
-                usernamePassAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(usernamePassAuthToken); 
-            }
+        catch(SignatureException | ExpiredJwtException | UnsupportedJwtException e){
+          filterChain.doFilter(request, response);
+          return ;
         }
         response.setHeader("token", authContent);
         filterChain.doFilter(request,response);
