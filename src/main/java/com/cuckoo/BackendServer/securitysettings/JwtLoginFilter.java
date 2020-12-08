@@ -41,7 +41,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         try {
             user = new ObjectMapper().readValue(request.getInputStream(), UserType.class);
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                user.getUsername(), user.getPassword(), new ArrayList<>());
+                user.getEmail(), user.getPassword(), new ArrayList<>());
             return this.authenticationManager.authenticate(authenticationToken);
         } catch (InternalAuthenticationServiceException e) {
             response.setStatus(403);

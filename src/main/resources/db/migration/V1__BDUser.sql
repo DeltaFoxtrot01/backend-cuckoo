@@ -11,5 +11,16 @@ CREATE TABLE cuckoo.users (
     UNIQUE(email),
     PRIMARY KEY(id)
 );
+
+CREATE TABLE cuckoo.hashes (
+  medic_id uuid,
+  hash_id SERIAL NOT NULL,
+  hash_value VARCHAR(1000) NOT NULL,
+  note VARCHAR(100) NOT NULL,
+  is_positive BOOLEAN DEFAULT false,
+  PRIMARY KEY(hash_id),
+  FOREIGN KEY(medic_id) REFERENCES cuckoo.users(id)
+
+);
 -- password: aPassword
 INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('david.dm2008@gmail.com','David','Martins','$2y$12$KSD3ItIkt1wUhjnQG662Ruaok.2J/wA9x3Buk9cl4hLa73TsMyV1. ');

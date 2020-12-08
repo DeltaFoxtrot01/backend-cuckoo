@@ -13,13 +13,13 @@ public class UserTypeMapper implements RowMapper<UserType>{
     public UserType mapRow(ResultSet rs, int rowNum) {
 
         UUID id = null;
-        String username = null;
+        String email = null;
         String password = null;
         String first = null;
         String last = null;
 
         try {
-            username = rs.getString("email");
+            email = rs.getString("email");
         } catch (SQLException e){
             //continue
         }
@@ -48,6 +48,6 @@ public class UserTypeMapper implements RowMapper<UserType>{
             //continue
         }
 
-        return new UserType(id, username, password, first, last);
+        return new UserType(id, email, password, first, last);
     }
 }
