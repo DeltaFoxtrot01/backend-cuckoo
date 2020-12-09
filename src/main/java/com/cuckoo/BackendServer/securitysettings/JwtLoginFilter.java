@@ -60,7 +60,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = "Bearer ";
         token = token + this.loginService.createJwtToken(user.getUsername());
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader("token", token);
+        response.setHeader("Authorization", token);
         chain.doFilter(request, response);
     }
 }
