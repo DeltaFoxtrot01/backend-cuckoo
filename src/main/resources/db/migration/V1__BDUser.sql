@@ -18,6 +18,8 @@ CREATE TABLE cuckoo.hashes (
   hash_value VARCHAR(1000) NOT NULL,
   note VARCHAR(100) NOT NULL,
   is_positive BOOLEAN DEFAULT false,
+  expiration_date BIGINT NOT NULL,
+  medic_date BIGINT,
   PRIMARY KEY(hash_id),
   FOREIGN KEY(medic_id) REFERENCES cuckoo.users(id)
 

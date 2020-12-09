@@ -3,6 +3,7 @@ package com.cuckoo.BackendServer.hash;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -161,25 +162,32 @@ public class HashManagementTest {
     int num;
     hash.setNote("a note");
     hash.setHashValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-
+    Date date = new Date();
+    Long dateTimestamp = date.getTime();
+    
     this.hashManagementService.addPatient(hash, this.medic1_id);
     hash = this.hashManagementService.getHashes(this.medic1_id).get(0);
+    hash.setDate(dateTimestamp);
     this.hashManagementService.markPatientAsPositive(hash, this.medic1_id);
     num = this.hashManagementService.getHashes(this.medic1_id).size();
     assertEquals(0, num);
-    num = this.hashesRepository.getPositiveHashes().size();
+    List<HashDto> positiveHashes = this.hashesRepository.getPositiveHashes();
+    num = positiveHashes.size();
     assertEquals(1, num);
+    assertEquals(dateTimestamp, positiveHashes.get(0).getDate());
   }
 
   @Test
   public void medicMarksPatientAsPositiveFromOtherMedic(){
     HashDto hash = new HashDto();
-    String medicId = this.medic2_id.toString();
+    String medicId = this.medic2_id;
     hash.setNote("a note");
     hash.setHashValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-
+    Date date = new Date();
+    Long dateTimestamp = date.getTime();
     this.hashManagementService.addPatient(hash, this.medic1_id);
     HashDto hash2 = this.hashManagementService.getHashes(this.medic1_id).get(0);
+    hash2.setDate(dateTimestamp);
     
     assertThrows(UnathorizedRequestException.class, () -> {
       this.hashManagementService.markPatientAsPositive(hash2, medicId);
@@ -190,7 +198,10 @@ public class HashManagementTest {
   public void medicMarksPatientAsPositiveThatDoesNotExist(){
     HashDto hash = new HashDto();
     String medicId = this.medic1_id;
+    Date date = new Date();
+    Long dateTimestamp = date.getTime();
     hash.setNote("a note");
+    hash.setDate(dateTimestamp);
     hash.setHashValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     hash.setId(1);
 

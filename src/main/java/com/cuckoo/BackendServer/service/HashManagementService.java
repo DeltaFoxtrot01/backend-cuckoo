@@ -62,6 +62,7 @@ public class HashManagementService {
    */
   @Scheduled(fixedDelay = 1000*60*60)
   public void deleteOldHashes(){
+    this.hashesRepository.clearOutdatedHashes();
     System.out.println("I am gonna delete stuff"); //just for testing
   }
   

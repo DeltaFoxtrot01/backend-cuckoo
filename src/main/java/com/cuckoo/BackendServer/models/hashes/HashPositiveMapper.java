@@ -12,7 +12,11 @@ public class HashPositiveMapper implements RowMapper<HashDto> {
   @Override
   public HashDto mapRow(ResultSet rs, int rowNum) throws SQLException {
     try{
-      return new HashDto(rs.getInt("hash_id"),rs.getString("hash_value"));
+      HashDto res = new HashDto();
+      res.setId(rs.getInt("hash_id"));
+      res.setHashValue(rs.getString("hash_value"));
+      res.setDate(rs.getLong("medic_date"));
+      return res;
     }
     catch(SQLException e){
       throw new DatabaseException("Unable to map HashDto");

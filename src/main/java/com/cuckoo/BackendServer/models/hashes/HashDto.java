@@ -5,6 +5,7 @@ public class HashDto {
   private String hashValue;
   private String note;
   private Integer id;
+  private Long date;
 
 
   public HashDto(){
@@ -44,5 +45,13 @@ public class HashDto {
 
   public void setId(Integer id) {
     this.id = id;
+  }
+
+  public Long getDate() {
+    return date;
+  }
+
+  public void setDate(Long date) {
+    this.date = date;
   }
 }

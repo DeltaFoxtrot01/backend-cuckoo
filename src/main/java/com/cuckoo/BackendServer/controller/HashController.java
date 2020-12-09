@@ -36,4 +36,9 @@ public class HashController {
     this.hashManagementService.markPatientAsNegative(hash, principal.getName());
   }
 
+  @PutMapping("/hash/positive")
+  public void markAsPositive(@RequestBody HashDto hash, Principal principal){
+    this.hashManagementService.markPatientAsPositive(hash, principal.getName());
+  }
+
 }
