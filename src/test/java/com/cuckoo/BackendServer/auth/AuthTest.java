@@ -52,7 +52,7 @@ public class AuthTest {
 
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
-    String token = result.getHeaders().get("token").get(0);
+    String token = result.getHeaders().get("Authorization").get(0);
     assertEquals("Bearer ", token.substring(0, 7));
     assertEquals(true, token.length() > 7);
   }
@@ -109,7 +109,7 @@ public class AuthTest {
     ResponseEntity<Void> result = restTemplate.exchange(uri, 
                                           HttpMethod.POST,entity, Void.class);
     
-    String token = result.getHeaders().get("token").get(0);
+    String token = result.getHeaders().get("Authorization").get(0);
 
     HttpHeaders headers = new HttpHeaders();
     headers.set("Authorization", token);

@@ -81,7 +81,7 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
           filterChain.doFilter(request, response);
           return ;
         }
-        response.setHeader("token", authContent);
+        response.setHeader("Authorization", authContent);
         filterChain.doFilter(request,response);
     }
 }
