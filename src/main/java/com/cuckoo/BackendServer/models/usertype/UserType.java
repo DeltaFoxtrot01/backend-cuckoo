@@ -16,37 +16,47 @@ Used only for service purposes
 public class UserType implements UserDetails {
 
     private UUID id;
-    private String username;
+    private String email;
     private String password;
     private String firstName;
     private String lastName;
     
     /*should use only this method inside and outside the class to set the password*/
     
-    public UserType(){}
+    public UserType(){
+      this.id = null;
+      this.email = null;
+      this.password = null;
+      this.firstName = null;
+      this.lastName = null;
+    }
     
     public UserType(String username, String password){
-        this.username = username;
+        this.email = username;
         this.password = password;
     }
 
-    public UserType(String username, String password, String firstName, String lastName){
-        this.username = username;
+    public UserType(String email, String password, String firstName, String lastName){
+        this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
-    public UserType(UUID id, String username, String password, String firstName, String lastName){
+    public UserType(UUID id, String email, String password, String firstName, String lastName){
         this.id = id;
-        this.username = username;
+        this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
     @Override
-    public String getUsername() { return this.username; }
+    public String getUsername() {
+      if(this.id == null)
+        return null;
+      return this.id.toString(); 
+    }
     @Override
     public String getPassword() { return this.password; }
     
@@ -80,12 +90,12 @@ public class UserType implements UserDetails {
         return null;
     }
 
-    public UUID getId() { return this.id; }
     public String getFirstName() { return this.firstName; }
     public String getLastName() { return this.lastName; }
+    public String getEmail() { return this.email; }
     
-    
-    public void setUsername(String username) { this.username = username; }
+    public void setUsername(UUID id) {this.id = id;}
+    public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public void setLastName(String lastName) { this.lastName = lastName; }

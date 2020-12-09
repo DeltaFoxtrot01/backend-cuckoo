@@ -3,7 +3,6 @@ package com.cuckoo.BackendServer.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,7 +11,6 @@ import com.cuckoo.BackendServer.models.usertype.UserType;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -22,7 +20,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,7 +41,7 @@ public class AuthTest {
     RestTemplate restTemplate = new RestTemplate();
     String baseUrl = host + this.port + loginEndpoint;
     UserType user = new UserType();
-    user.setUsername("david.dm2008@gmail.com");
+    user.setEmail("david.dm2008@gmail.com");
     user.setPassword("aPassword");
     
     URI uri = new URI(baseUrl);
@@ -65,7 +62,7 @@ public class AuthTest {
     RestTemplate restTemplate = new RestTemplate();
     String baseUrl = host + this.port + loginEndpoint;
     UserType user = new UserType();
-    user.setUsername("david.dm2008@gmail.com");
+    user.setEmail("david.dm2008@gmail.com");
     user.setPassword("aPasswrd");
     
     URI uri = new URI(baseUrl);
@@ -83,7 +80,7 @@ public class AuthTest {
     RestTemplate restTemplate = new RestTemplate();
     String baseUrl = host + this.port + loginEndpoint;
     UserType user = new UserType();
-    user.setUsername("david.d2008@gmail.com");
+    user.setEmail("david.d2008@gmail.com");
     user.setPassword("aPassword");
     
     URI uri = new URI(baseUrl);
@@ -103,7 +100,7 @@ public class AuthTest {
     String baseUrl = host + this.port + loginEndpoint;
     String baseUserUrl = host + this.port + userEndpoint;
     UserType user = new UserType();
-    user.setUsername("david.dm2008@gmail.com");
+    user.setEmail("david.dm2008@gmail.com");
     user.setPassword("aPassword");
     
     URI uri = new URI(baseUrl);
@@ -125,7 +122,7 @@ public class AuthTest {
                                                             headers2,
                                                             UserType.class);
     UserType userRes = userResponse.getBody();
-    assertEquals("david.dm2008@gmail.com", userRes.getUsername());
+    assertEquals("david.dm2008@gmail.com", userRes.getEmail());
     assertEquals("David", userRes.getFirstName());
     assertEquals("Martins", userRes.getLastName());
   }
