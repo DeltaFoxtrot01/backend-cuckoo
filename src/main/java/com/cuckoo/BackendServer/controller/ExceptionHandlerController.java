@@ -3,7 +3,7 @@ package com.cuckoo.BackendServer.controller;
 import com.cuckoo.BackendServer.exceptions.DatabaseException;
 import com.cuckoo.BackendServer.exceptions.FieldTooLongException;
 import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
-import com.cuckoo.BackendServer.exceptions.PassWordWeakException;
+import com.cuckoo.BackendServer.exceptions.PasswordweakException;
 import com.cuckoo.BackendServer.exceptions.UnathorizedRequestException;
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
@@ -32,7 +32,7 @@ public class ExceptionHandlerController{
   }
 
   @ExceptionHandler
-  public ResponseEntity<?> passwordWeakHandler(PassWordWeakException e){
+  public ResponseEntity<?> passwordWeakHandler(PasswordweakException e){
     return new ResponseEntity<>("Level of the password is " + e.getLevel(),HttpStatus.BAD_REQUEST);
   }
 
