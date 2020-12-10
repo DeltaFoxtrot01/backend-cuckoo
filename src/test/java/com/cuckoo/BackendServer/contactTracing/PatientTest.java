@@ -5,9 +5,16 @@ import com.cuckoo.BackendServer.models.contactTracing.patient.Patient;
 import com.cuckoo.BackendServer.models.contactTracing.patient.PatientDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@TestPropertySource(locations="classpath:application-test.properties")
+@ExtendWith(SpringExtension.class)
 public class PatientTest {
 
     private static Long seed;
