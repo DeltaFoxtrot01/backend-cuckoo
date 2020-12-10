@@ -1,5 +1,7 @@
 package com.cuckoo.BackendServer.service.remoteServices;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -15,11 +17,15 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class NotificationsRemoteService {
+
+  @Value("${firebase.key}")
+  private String keyPath;
 
   /** 
    * Standard configurations for the Firebase SDK 
@@ -27,8 +33,7 @@ public class NotificationsRemoteService {
   @PostConstruct
   public void initGoogleSettings() throws IOException{
 
-    ClassLoader classLoader = NotificationsRemoteService.class.getClassLoader();
-    InputStream serviceAccount =  classLoader.getResourceAsStream("keys/cuckoocovid-firebase-key.json");
+    InputStream serviceAccount = new FileInputStream(new File(this.keyPath));
 
     FirebaseOptions options = FirebaseOptions.builder()
       .setCredentials(GoogleCredentials.fromStream(serviceAccount))
