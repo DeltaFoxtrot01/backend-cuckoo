@@ -40,7 +40,8 @@ public class NotificationsRemoteService {
       .setDatabaseUrl("https://cuckoocovid.firebaseio.com")
       .build();
       
-    FirebaseApp.initializeApp(options);
+    if(FirebaseApp.getApps().isEmpty())
+      FirebaseApp.initializeApp(options);
   }
 
   /**
