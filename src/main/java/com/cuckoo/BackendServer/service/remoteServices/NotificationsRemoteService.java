@@ -38,10 +38,10 @@ public class NotificationsRemoteService {
       
     FirebaseApp.initializeApp(options);
 
-    Map<String, String> send = new HashMap();
-    send.put("title", "there");
-    send.put("body", "brother");
-    this.sendDataNotification(send);
+    //Map<String, String> send = new HashMap();
+    //send.put("title", "there");
+    //send.put("body", "brother");
+    //this.sendDataNotification(send);
   }
 
   /**
@@ -53,10 +53,6 @@ public class NotificationsRemoteService {
       throw new InvalidArgumentsException("information can not be null");
 
     Message message = Message.builder() 
-      .setNotification(Notification.builder()
-        .setTitle("$GOOG up 1.43% on the day")
-        .setBody("$GOOG gained 11.80 points to close at 835.67, up 1.43% on the day.")
-      .build())
       .putData("click_action", "FLUTTER_NOTIFICATION_CLICK")
       .putAllData(information)
       .setTopic("main")
