@@ -1,9 +1,12 @@
 package com.cuckoo.BackendServer.models.contactTracing;
 
+import lombok.SneakyThrows;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import lombok.Getter;
 
 import java.nio.ByteBuffer;
-import java.util.Random;
+import java.util.*;
 
 /** Cuckoo Filter implementation
  *  Constants calculated for:
@@ -164,5 +167,23 @@ public class CuckooFilter {
                 table[b][i] = -1;
 
         this.count = 0;
+    }
+
+    @SneakyThrows
+    @Override
+    public String toString() {
+        JSONArray entries = new JSONArray();
+
+        for (int b = 0; b < MAX_NUM_BUCKETS; b++)
+            for (int i = 0; i < MAX_BUCKET_SIZE; i++)
+                if (table[b][i] > -1) {
+                    JSONObject json = new JSONObject();
+                    json.put("fingerprint", table[b][i]);
+                    json.put("bucket", b);
+                    json.put("pos", i);
+                    entries.put(json);
+                }
+
+        return entries.toString();
     }
 }

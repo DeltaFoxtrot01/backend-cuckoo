@@ -96,3 +96,11 @@ Após isto basta executar diretamente o servidor.
   - docker run --env-file .env -v application-prod.properties:target/classes/ backend-cuckoo:latest
 
   A porta 8080 irá ficar exposta para tcp
+
+
+
+  <h2> Configurar as chaves do firebase </h2>
+
+  De forma a puder usar a API da google para puder mandar notificações é necessário colocar um ficheiro chamado cuckoocovid-firebase-key.json dentro na pasta resources/keys.
+
+  Este ficheiro deve ser obtido nas settings do projeto na secção "Contas de Serviço", fazendo o download de uma nova chave. O ficheiro tem de ter o mesmo nome. 
