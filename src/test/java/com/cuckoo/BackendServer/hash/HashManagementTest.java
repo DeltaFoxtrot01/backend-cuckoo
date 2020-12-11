@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
+import com.cuckoo.BackendServer.exceptions.PatientNotPositiveException;
 import com.cuckoo.BackendServer.exceptions.UnathorizedRequestException;
 import com.cuckoo.BackendServer.models.hashes.HashDto;
 import com.cuckoo.BackendServer.models.usertype.UserType;
@@ -254,6 +255,53 @@ public class HashManagementTest {
 
     assertThrows(UnathorizedRequestException.class , () -> {
       this.hashManagementService.markPatientAsNegative(hash, medicId);
+    });
+  }
+
+  @Test
+  public void deletesHashWithSuccess(){
+    HashDto hash = new HashDto();
+    int num;
+    hash.setNote("a note");
+    hash.setHashValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    Date date = new Date();
+    Long dateTimestamp = date.getTime();
+    
+    this.hashManagementService.addPatient(hash, this.medic1_id);
+    hash = this.hashManagementService.getHashes(this.medic1_id).get(0);
+    hash.setDate(dateTimestamp);
+    this.hashManagementService.markPatientAsPositive(hash, this.medic1_id);
+    List<HashDto> positiveHashes = this.hashesRepository.getPositiveHashes();
+    hash = positiveHashes.get(0);
+    this.hashManagementService.deleteHashFromPositivePatient(hash);
+    num = this.hashManagementService.getPositiveHashes().size();
+    assertEquals(0, num);
+  }
+
+  @Test
+  public void deletesHashThatDoesNotExist(){
+    HashDto hash = new HashDto();
+    hash.setNote("a note");
+    hash.setHashValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    
+    hash.setId(1);
+    assertThrows(PatientNotPositiveException.class, () -> {
+      this.hashManagementService.deleteHashFromPositivePatient(hash);
+    });
+  }
+
+  @Test
+  public void deletesHashFromPatientNonPositive(){
+    HashDto hash = new HashDto();
+
+    hash.setNote("a note");
+    hash.setHashValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    
+    this.hashManagementService.addPatient(hash, this.medic1_id);
+    HashDto hash2 = this.hashManagementService.getHashes(this.medic1_id).get(0);
+    
+    assertThrows(PatientNotPositiveException.class, () -> {
+      this.hashManagementService.deleteHashFromPositivePatient(hash2);
     });
   }
 

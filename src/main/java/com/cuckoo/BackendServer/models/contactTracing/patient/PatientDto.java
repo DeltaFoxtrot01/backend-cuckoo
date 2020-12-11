@@ -9,7 +9,7 @@ public class PatientDto implements Serializable {
 
     @Getter
     @Setter
-    private Long seed;
+    private String encodedSeed;
 
     @Getter
     @Setter
@@ -25,8 +25,8 @@ public class PatientDto implements Serializable {
 
     public PatientDto() {}
 
-    public PatientDto(Long seed, Long epoch, Long randomNumber, Long infectedEpoch) {
-        this.seed = seed;
+    public PatientDto(String encodedSeed, Long epoch, Long randomNumber, Long infectedEpoch) {
+        this.encodedSeed = encodedSeed;
         this.epoch = epoch;
         this.randomNumber = randomNumber;
         this.infectedEpoch = infectedEpoch;

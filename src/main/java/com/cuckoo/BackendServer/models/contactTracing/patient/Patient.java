@@ -6,75 +6,87 @@ import lombok.Getter;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Patient {
 
     private final String ENCRYPTION_ALGORITHM = "SHA-256";
 
     @Getter
-    private final Long seed;
+    private final Long day;
 
     @Getter
-    private final Long epoch;
+    private final List<byte[]> seeds = new ArrayList<>();
 
     @Getter
-    private Long randomNumber;
+    private final List<Long> epochs = new ArrayList<>();
 
     @Getter
-    private Long infectedEpoch;
+    private final List<Long> randomValues = new ArrayList<>();
 
-    public Patient(Long seed, Long epoch) {
-        checkSeed(seed);
-        checkEpochs(epoch, epoch); // Dank yet effective
-        this.seed = seed;
-        this.epoch = epoch;
-    }
-
-    public Patient(Long seed, Long epoch, Long randomNumber, Long infectedEpoch) {
-        checkSeed(seed);
-        checkEpochs(epoch, infectedEpoch);
-        checkRandomNumber(randomNumber);
-        this.seed = seed;
-        this.epoch = epoch;
-        this.randomNumber = randomNumber;
-        this.infectedEpoch = infectedEpoch;
-    }
+    @Getter
+    private final Long infectedEpoch;
 
     public Patient(PatientDto data) {
-        this(data.getSeed(), data.getEpoch(), data.getRandomNumber(), data.getInfectedEpoch());
+        checkEpochs(data.getEpoch(), data.getInfectedEpoch());
+        this.infectedEpoch = data.getInfectedEpoch();
+        this.day = data.getEpoch() / (1000 * 60 * 60 * 24);
+    }
+
+    public void insertData(PatientDto data) {
+        checkEncodedSeed(data.getEncodedSeed());
+        checkEpochs(data.getEpoch(), data.getInfectedEpoch());
+        checkRandomNumber(data.getRandomNumber());
+        this.seeds.add(Base64.getDecoder().decode(data.getEncodedSeed()));
+        this.epochs.add(data.getEpoch());
+        this.randomValues.add(data.getRandomNumber());
     }
 
     /**
-     *  Computes for this patient information the EphID:
+     *  Computes for this patient information the EphIDs:
      *      EphID = Hash(seed)
      */
-    public byte[] ephID() {
+    public List<byte[]> ephIDs() {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
-            byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
             int ephIDByteSize = 16;
 
-            messageDigest.update(seedBytes);
-            return Arrays.copyOfRange(messageDigest.digest(), 0, ephIDByteSize);
+            List<byte[]> ephIDs = new ArrayList<>();
+            for (byte[] s : this.seeds) {
+                messageDigest.update(s);
+                ephIDs.add(Arrays.copyOfRange(messageDigest.digest(), 0, ephIDByteSize));
+                messageDigest.reset();
+            }
+
+            return ephIDs;
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
         }
     }
 
     /**
-     *  Computes for this patient information the hash that is stored by other patients:
+     *  Computes for this patient information the hashes that are stored by other patients:
      *      Hash(EphID || epoch)
      */
-    public byte[] patientHash() {
+    public List<byte[]> patientHashes() {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
-            byte[] ephID = ephID();
-            byte[] epochBytes = ByteBuffer.allocate(8).putLong(this.epoch).array();
+            List<byte[]> ephIDs = ephIDs();
+            List<byte[]> epochs = this.epochs
+                    .stream()
+                    .map(e -> ByteBuffer.allocate(8).putLong(e).array())
+                    .collect(Collectors.toList());
 
-            messageDigest.update(ephID);
-            messageDigest.update(epochBytes);
-            return messageDigest.digest();
+            List<byte[]> hashes = new ArrayList<>();
+            for (int i = 0; i < ephIDs.size(); i++) {
+                messageDigest.update(ephIDs.get(i));
+                messageDigest.update(epochs.get(i));
+                hashes.add(messageDigest.digest());
+                messageDigest.reset();
+            }
+
+            return hashes;
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
         }
@@ -87,13 +99,21 @@ public class Patient {
     public byte[] medicHash() {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(this.ENCRYPTION_ALGORITHM);
-            byte[] seedBytes = ByteBuffer.allocate(8).putLong(this.seed).array();
-            byte[] epochBytes = ByteBuffer.allocate(8).putLong(this.epoch).array();
-            byte[] randomNumberBytes = ByteBuffer.allocate(8).putLong(this.randomNumber).array();
+            List<byte[]> epochs = this.epochs
+                    .stream()
+                    .map(e -> ByteBuffer.allocate(8).putLong(e).array())
+                    .collect(Collectors.toList());
+            List<byte[]> randomValues = this.randomValues
+                    .stream()
+                    .map(v -> ByteBuffer.allocate(8).putLong(v).array())
+                    .collect(Collectors.toList());
 
-            messageDigest.update(seedBytes);
-            messageDigest.update(epochBytes);
-            messageDigest.update(randomNumberBytes);
+            for (int i = 0; i < this.seeds.size(); i++) {
+                messageDigest.update(this.seeds.get(i));
+                messageDigest.update(epochs.get(i));
+                messageDigest.update(randomValues.get(i));
+            }
+
             return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
@@ -112,13 +132,26 @@ public class Patient {
 
     }
 
-    private void checkSeed(Long seed) {
-        if (seed == null)
+    private void checkEncodedSeed(String encodedSeed) {
+        if (encodedSeed == null || encodedSeed.isEmpty())
             throw new EmptySeedException();
     }
 
     private void checkRandomNumber(Long randomNumber) {
         if (randomNumber == null)
             throw new EmptyRandomNumberException();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Patient patient = (Patient) o;
+        return this.day.equals(patient.day);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.day);
     }
 }

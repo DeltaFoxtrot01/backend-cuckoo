@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.cuckoo.BackendServer.exceptions.DatabaseException;
 import com.cuckoo.BackendServer.exceptions.FieldTooLongException;
 import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
+import com.cuckoo.BackendServer.exceptions.PatientNotPositiveException;
 import com.cuckoo.BackendServer.exceptions.UnathorizedRequestException;
 import com.cuckoo.BackendServer.models.hashes.HashDto;
 import com.cuckoo.BackendServer.models.hashes.HashMapper;
@@ -44,7 +45,7 @@ public class HashesRepository {
 
     try{
       long expDate = this.jdbcTemplate.query(sql,new Object[]{hashId}, new DateMapper()).get(0);
-      return expDate - 14*24*60*60*1000 < date && date < this.getCurrentTime();
+      return expDate - 14*24*60*60*1000 <= date && date <= this.getCurrentTime();
     } catch (DataAccessException e){
       throw new DatabaseException(e.getMessage());
     }
@@ -63,7 +64,7 @@ public class HashesRepository {
     if(hash.getNote().length() > 100)
       throw new FieldTooLongException("Note can only have 100 characters");
     if(hash.getHashValue().length() > 1000)
-      throw new FieldTooLongException("Note can only have 100 characters");
+      throw new FieldTooLongException("Note can only have 1000 characters");
 
     String sql = "INSERT INTO cuckoo.hashes(medic_id, hash_value, note, expiration_date) VALUES (?,?,?,?)";
     try{
@@ -151,6 +152,28 @@ public class HashesRepository {
     catch (DataAccessException e){
       throw new DatabaseException("Unable to update hash in database:" + e.getMessage());
     }
+  }
+
+  /**
+   * Deletes a positive patient given an Id
+   * @param hash Hash to be deleted
+   */
+  public void deletePositivePatient(HashDto hash){
+    if(hash == null)
+      throw new InvalidArgumentsException("Hash can not be null");
+    if(hash.getId() == null)
+      throw new InvalidArgumentsException("Hash id can not be null");
+    
+    String sql = "DELETE FROM cuckoo.hashes WHERE is_positive = true AND hash_id = ?";
+
+    try{
+      int res = this.jdbcTemplate.update(sql,hash.getId());
+      if(res == 0)
+        throw new PatientNotPositiveException("Can not delete hash from positive patient");
+    } catch(DataAccessException e){
+      throw new DatabaseException("Unable to delete hash via Id: " + e.getMessage());
+    }
+    
   }
 
   public void clearOutdatedHashes(){

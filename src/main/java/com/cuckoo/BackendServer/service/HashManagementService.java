@@ -1,6 +1,5 @@
 package com.cuckoo.BackendServer.service;
 
-import java.security.Principal;
 import java.util.List;
 
 import com.cuckoo.BackendServer.models.hashes.HashDto;
@@ -55,6 +54,22 @@ public class HashManagementService {
    */
   public List<HashDto> getHashes(String userId){
     return this.hashesRepository.getHashes(userId);
+  }
+
+  /**
+   * Returns all the hashes from positive patients
+   * @return List of hashes
+   */
+  public List<HashDto> getPositiveHashes(){
+    return this.hashesRepository.getPositiveHashes();
+  }
+
+  /**
+   * Deletes a hash from a positive patient
+   * @param hashDto
+   */
+  public void deleteHashFromPositivePatient(HashDto hash){
+    this.hashesRepository.deletePositivePatient(hash);
   }
 
   /**
