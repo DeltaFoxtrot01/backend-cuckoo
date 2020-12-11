@@ -10,6 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Base64;
+import java.util.List;
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -17,54 +21,101 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 public class PatientTest {
 
-    private static Long seed;
+    private static final byte[] seed = new byte[32];
+    private static String encodedSeed;
     private static Long epoch;
     private static Long randomNumber;
     private static Long infectedEpoch;
 
+    private static final byte[] otherSeed = new byte[32];
+    private static String otherEncodedSeed;
+    private static Long otherEpoch;
+    private static Long otherRandomNumber;
+
     @BeforeAll
     static void setup() {
-        seed = 345239L;
+        Random random = new Random(99);
+
+        random.nextBytes(seed);
+        encodedSeed = Base64.getEncoder().encodeToString(seed);
         epoch = 976564L;
-        randomNumber = 5201976L;
+        randomNumber = random.nextLong();
         infectedEpoch = 976552L;
+
+        random.nextBytes(otherSeed);
+        otherEncodedSeed = Base64.getEncoder().encodeToString(otherSeed);
+        otherEpoch = 976565L;
+        otherRandomNumber = random.nextLong();
     }
 
     @Test
     public void createPatientFromDto() {
-        PatientDto dto = new PatientDto(seed, epoch, randomNumber, infectedEpoch);
-        Patient data = new Patient(dto);
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
+        PatientDto otherDto = new PatientDto(otherEncodedSeed, otherEpoch, otherRandomNumber, infectedEpoch);
 
-        assertEquals(data.getSeed(), seed, "Should contain the correct seed");
-        assertEquals(data.getEpoch(), epoch, "Should contain the correct epoch");
-        assertEquals(data.getRandomNumber(), randomNumber, "Should contain the correct random number");
+        Patient data = new Patient(dto);
+        data.insertData(dto);
+        data.insertData(otherDto);
+
+        assertArrayEquals(data.getSeeds().get(0), seed, "Should contain the first seed");
+        assertArrayEquals(data.getSeeds().get(1), otherSeed, "Should contain the second seed");
+        assertEquals(data.getEpochs().get(0), epoch, "Should contain the correct epoch");
+        assertEquals(data.getEpochs().get(1), otherEpoch, "Should contain the correct epoch");
+        assertEquals(data.getRandomValues().get(0), randomNumber, "Should contain the correct random number");
+        assertEquals(data.getRandomValues().get(1), otherRandomNumber, "Should contain the correct random number");
         assertEquals(data.getInfectedEpoch(), infectedEpoch, "Should contain the correct infected epoch");
     }
     
     @Test
     public void invalidInputs() {
-        PatientDto dto = new PatientDto(seed, epoch, randomNumber, infectedEpoch);
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
 
-        dto.setSeed(null);
-        assertThrows(EmptySeedException.class, () -> new Patient(dto), "Should not accept a null seed");
-        dto.setSeed(seed);
+        dto.setEncodedSeed(null);
+        assertThrows(EmptySeedException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept a null seed");
+        dto.setEncodedSeed("");
+        assertThrows(EmptySeedException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept an empty seed");
+        dto.setEncodedSeed(encodedSeed);
 
         dto.setEpoch(null);
-        assertThrows(EmptyEpochException.class, () -> new Patient(dto), "Should not accept a null epoch");
+        assertThrows(EmptyEpochException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept a null epoch");
         dto.setEpoch(-1L);
-        assertThrows(NegativeEpochException.class, () -> new Patient(dto), "Should not accept a negative epoch");
+        assertThrows(NegativeEpochException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept a negative epoch");
         dto.setEpoch(infectedEpoch - 1);
-        assertThrows(InvalidEpochException.class, () -> new Patient(dto), "Should not accept an epoch lower than infected epoch");
+        assertThrows(InvalidEpochException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept an epoch lower than infected epoch");
         dto.setEpoch(epoch);
 
         dto.setRandomNumber(null);
-        assertThrows(EmptyRandomNumberException.class, () -> new Patient(dto), "Should not accept a null random number");
+        assertThrows(EmptyRandomNumberException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept a null random number");
         dto.setRandomNumber(randomNumber);
 
         dto.setInfectedEpoch(null);
-        assertThrows(EmptyEpochException.class, () -> new Patient(dto), "Should not accept a null infected epoch");
+        assertThrows(EmptyEpochException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept a null infected epoch");
         dto.setInfectedEpoch(-2L);
-        assertThrows(NegativeEpochException.class, () -> new Patient(dto), "Should not accept a negative infected epoch");
+        assertThrows(NegativeEpochException.class, () -> {
+            Patient data = new Patient(dto);
+            data.insertData(dto);
+        }, "Should not accept a negative infected epoch");
         dto.setInfectedEpoch(infectedEpoch);
     }
 
@@ -74,21 +125,32 @@ public class PatientTest {
 
     @Test
     public void generateEphID(){
-        Patient data = new Patient(seed, epoch, randomNumber, infectedEpoch);
-        byte[] id = data.ephID();
-        printBytes(id, "EphID");
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(dto);
+        data.insertData(dto);
+
+        List<byte[]> ids = data.ephIDs();
+        for (byte[] id : ids)
+            printBytes(id, "EphID");
     }
 
     @Test
     public void generatePatientHash() {
-        Patient data = new Patient(seed, epoch, randomNumber, infectedEpoch);
-        byte[] patientHash = data.patientHash();
-        printBytes(patientHash, "Patient Hash");
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(dto);
+        data.insertData(dto);
+
+        List<byte[]> patientHashes = data.patientHashes();
+        for (byte[] h : patientHashes)
+            printBytes(h, "Patient Hash");
     }
 
     @Test
     public void generateMedicHash() {
-        Patient data = new Patient(seed, epoch, randomNumber, infectedEpoch);
+        PatientDto dto = new PatientDto(encodedSeed, epoch, randomNumber, infectedEpoch);
+        Patient data = new Patient(dto);
+        data.insertData(dto);
+
         byte[] medicHash = data.medicHash();
         printBytes(medicHash, "Medic Hash");
     }

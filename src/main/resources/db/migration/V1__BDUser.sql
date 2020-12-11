@@ -15,7 +15,7 @@ CREATE TABLE cuckoo.users (
 CREATE TABLE cuckoo.hashes (
   medic_id uuid,
   hash_id SERIAL NOT NULL,
-  hash_value VARCHAR(1000) NOT NULL,
+  hash_value VARCHAR(10000) NOT NULL,
   note VARCHAR(100) NOT NULL,
   is_positive BOOLEAN DEFAULT false,
   expiration_date BIGINT NOT NULL,
