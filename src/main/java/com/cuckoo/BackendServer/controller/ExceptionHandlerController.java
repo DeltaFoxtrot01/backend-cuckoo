@@ -1,7 +1,11 @@
 package com.cuckoo.BackendServer.controller;
 
 import com.cuckoo.BackendServer.exceptions.DatabaseException;
-import com.cuckoo.BackendServer.exceptions.PassWordWeakException;
+import com.cuckoo.BackendServer.exceptions.FieldTooLongException;
+import com.cuckoo.BackendServer.exceptions.FirebaseException;
+import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
+import com.cuckoo.BackendServer.exceptions.PasswordweakException;
+import com.cuckoo.BackendServer.exceptions.UnathorizedRequestException;
 import com.cuckoo.BackendServer.exceptions.UnknownUserException;
 import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
 import com.cuckoo.BackendServer.exceptions.WrongPasswordException;
@@ -11,33 +15,61 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import io.jsonwebtoken.SignatureException;
+
 /*to handle the exceptions as HTTP responses*/
 
 @RestControllerAdvice
 public class ExceptionHandlerController{
 
-    @ExceptionHandler
-    public ResponseEntity<?> wrongPasswordHandler(WrongPasswordException e){
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-    }
+  @ExceptionHandler
+  public ResponseEntity<Void> wrongPasswordHandler(WrongPasswordException e){
+    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+  }
 
-    @ExceptionHandler
-    public ResponseEntity<?> databaseHandler(DatabaseException e){
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  @ExceptionHandler
+  public ResponseEntity<Void> databaseHandler(DatabaseException e){
+    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 
-    @ExceptionHandler
-    public ResponseEntity<?> passwordWeakHandler(PassWordWeakException e){
-        return new ResponseEntity<>("Level of the password is " + e.getLevel(),HttpStatus.BAD_REQUEST);
-    }
+  @ExceptionHandler
+  public ResponseEntity<String> passwordWeakHandler(PasswordweakException e){
+    return new ResponseEntity<>("Level of the password is " + e.getLevel(),HttpStatus.BAD_REQUEST);
+  }
 
-    @ExceptionHandler
-    public ResponseEntity<?> unknowUserHandler(UnknownUserException e){
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+  @ExceptionHandler
+  public ResponseEntity<Void> unknowUserHandler(UnknownUserException e){
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  }
 
-    @ExceptionHandler
-    public ResponseEntity<?> userAlreadyExistsHandler(UserAlreadyExistsException e){
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+  @ExceptionHandler
+  public ResponseEntity<Void> userAlreadyExistsHandler(UserAlreadyExistsException e){
+    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<Void> invalidJwt(SignatureException e){
+    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<Void> unauthorizedRequest(UnathorizedRequestException e){
+    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<Void> fieldLimit(FieldTooLongException e){
+    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<Void> invalidArguments(InvalidArgumentsException e){
+    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<Void> firebaseError(FirebaseException e){
+    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
 }

@@ -1,0 +1,20 @@
+## Datasource initialization
+spring.datasource.url=jdbc:postgresql://localhost:<DATABASE PORT>/<DATABASE NAME>
+spring.datasource.username=<DATABASE USERNAME>
+spring.datasource.password=<DATABASE PASSWORD>
+
+## Flyway configuration
+spring.flyway.url=jdbc:postgresql://localhost:<DATABASE PORT>/<DATABASE NAME>
+spring.flyway.user=<DATABASE USERNAME>
+spring.flyway.schemas=<DATABASE SCHEMA>
+spring.flyway.password=<DATABASE PASSWORD>
+spring.flyway.locations=classpath:/db/migration
+spring.flyway.sqlMigrationPrefix=V
+spring.flyway.sqlMigrationSeparator=__
+spring.flyway.sql-migration-suffixes=.sql
+spring.flyway.validateOnMigrate=true
+
+jwt.key=<KEY>
+
+
+firebase.key=<KEY>

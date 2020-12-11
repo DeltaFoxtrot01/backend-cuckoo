@@ -1,40 +1,48 @@
 package com.cuckoo.BackendServer.service;
 
+import com.cuckoo.BackendServer.exceptions.UsernameEmptyException;
+import com.cuckoo.BackendServer.models.jwt.JwtHolder;
 import com.cuckoo.BackendServer.models.usertype.UserType;
-import com.cuckoo.BackendServer.repository.DatabaseAPI;
+import com.cuckoo.BackendServer.repository.LoginRepository;
+import com.cuckoo.BackendServer.securitysettings.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LoginService implements UserDetailsService{
+public class LoginService implements UserDetailsService {
 
-    @Autowired
-    private DatabaseAPI dbAPI;
+  @Autowired
+  private JwtUtil jwtService;
 
-    //@Autowired
-    //private AuthenticationManager authManager;
+  @Autowired
+  private LoginRepository dbAPI;
 
-    /* method to allow a login of a user */
-    //public String doLogin(UserType user) {
-    //    try {
-    //        this.authManager
-    //                .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-    //    } catch (BadCredentialsException e) {
-    //        throw new WrongPasswordException(user.getUsername());
-    //    }
-    //    final UserType userDetails = this.dbAPI.getUserByUsername(user.getUsername());
-    //    return this.jwtTokenUtil.generateToken(userDetails);
-    //}
-    
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
-            UserType res;
-            res = dbAPI.getUserByUsername(username);
-            return res;
-    }
+  @Override
+  public UserType loadUserByUsername(String username) throws UsernameNotFoundException {
+    return dbAPI.getUserByEmail(username);
+  }
 
+  public UserType loadUserById(String id) throws UsernameNotFoundException {
+    return dbAPI.getUserById(id);
+  }
+
+  /**
+   * returns all the info of the user but password hash
+   * @param username 
+   * @return UserType
+   */
+  public UserType getUserInfo(String userId) {
+    if (userId == null)
+      throw new UsernameEmptyException("Username can not be null for getUserInfo at service");
+    return this.dbAPI.getUserInfo(userId);
+  }
+
+  public String createJwtToken(String id) {
+    UserType user = this.dbAPI.getUserById(id);
+    JwtHolder jwt = new JwtHolder(this.jwtService.generateToken(user));
+    return jwt.getJwt();
+  }
 }

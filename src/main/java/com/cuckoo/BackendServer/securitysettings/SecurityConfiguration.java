@@ -28,10 +28,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     private LoginService loginService;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    JwtUtil jwtToken;
+    private JwtUtil jwtToken;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -44,7 +44,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
             .csrf()
             .disable()
             .addFilter(new JwtRequestFilter(this.authenticationManager(),this.loginService,this.jwtToken))
-            .addFilter(new JwtLoginFilter(this.authenticationManager(),"/login/authenticate",this.jwtToken))
+            .addFilter(new JwtLoginFilter(this.authenticationManager(),"/login/authenticate", this.loginService))
             .authorizeRequests()
             .antMatchers("/login/authenticate").permitAll()
             .anyRequest()
@@ -74,9 +74,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     public CorsConfigurationSource corsConfigurationSource(){
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE"));
-        config.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        config.setAllowedOrigins(Arrays.asList("*"));
         config.setAllowCredentials(true);
         config.setAllowedHeaders(Arrays.asList("*"));
+        config.addExposedHeader("Authorization");
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

@@ -4,18 +4,21 @@ import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.cuckoo.BackendServer.models.usertype.UserType;
 import com.cuckoo.BackendServer.service.LoginService;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 
 /*
@@ -37,34 +40,48 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String username = null;
+        String id;
         String jwt = null;
+        String authContent;
 
-        Cookie[] cookies = request.getCookies();
-
-        if(cookies != null){
-            for(int i = 0; i < cookies.length; i++){
-                if(cookies[i].getName().equals("sessionToken")){
-                    jwt = cookies[i].getValue();
-                    username = jwtUtil.extractUsername(jwt);
-                    break;
-                }
-            }
+        authContent = request.getHeader("Authorization");
+        if (authContent == null) {
+            filterChain.doFilter(request, response);
+            return ;
         }
 
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
-            UserDetails userDetails = this.loginService.loadUserByUsername(username);
-            if(this.jwtUtil.validateToken(jwt, userDetails)){
-                UsernamePasswordAuthenticationToken usernamePassAuthToken = 
-                    new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-                usernamePassAuthToken
-                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        if (authContent.startsWith("Bearer ")) {
+            jwt = authContent.substring(7);
+        } else {
+            response.setStatus(400);
+        }
+
+        if (jwt == null) {
+            filterChain.doFilter(request, response);
+            return ;
+        }
+
+        try{
+          id = jwtUtil.extractId(jwt);
+
+          if (id != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+              UserType userType = this.loginService.loadUserById(id);
+
+              if (this.jwtUtil.validateToken(jwt, userType)) {
+                UsernamePasswordAuthenticationToken usernamePassAuthToken =
+                  new UsernamePasswordAuthenticationToken(userType, null, userType.getAuthorities());
+                
+                usernamePassAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                  
                 SecurityContextHolder.getContext().setAuthentication(usernamePassAuthToken); 
-            }
+              }
+          }
         }
-
-        
+        catch(SignatureException | ExpiredJwtException | UnsupportedJwtException e){
+          filterChain.doFilter(request, response);
+          return ;
+        }
+        response.setHeader("Authorization", authContent);
         filterChain.doFilter(request,response);
     }
 }

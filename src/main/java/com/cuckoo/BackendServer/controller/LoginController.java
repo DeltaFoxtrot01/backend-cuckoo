@@ -1,38 +1,33 @@
 package com.cuckoo.BackendServer.controller;
 
 import com.cuckoo.BackendServer.models.usertype.UserType;
+import com.cuckoo.BackendServer.service.LoginService;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import java.security.Principal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class LoginController {
 
-    /* testing end point */
-    @GetMapping("login/hello")
-    public String hello() {
-        return "hello world";
+    @Autowired
+    private LoginService loginService;
+
+    /* retrieves user info */
+    @GetMapping("login/user-info")
+    public UserType getUserInfo(Principal principal) {
+        return this.loginService.getUserInfo(principal.getName()); 
     }
 
     /* end point for authentication */
     @PostMapping("login/authenticate")
-    public void createAuthToken(@RequestBody UserType user) {
-      //endpoint for authentication
-    }
-
-    @PutMapping("login/logout")
-    public void logoutAccount(HttpServletResponse response){
-        Cookie cookie = new Cookie("sessionToken","");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-
-        response.addCookie(cookie);
+    public ResponseEntity<Void> createAuthToken() {
+      //authentication endpoint
+      return ResponseEntity.ok().build();
     }
 
 }

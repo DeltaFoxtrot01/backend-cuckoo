@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.springframework.security.core.userdetails.UserDetails;
+import com.cuckoo.BackendServer.models.usertype.UserType;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -18,9 +20,12 @@ Service for the JWT generation and verification
 
 @Service
 public class JwtUtil{
-    private String SECRET_KEY = "themis_jwt_testing_key";
+
+
+    @Value("${jwt.key}")
+    private String SECRET_KEY;
     
-    public String extractUsername(String token){
+    public String extractId(String token){
         return this.extractClaim(token, Claims::getSubject);
     }
 
@@ -29,7 +34,7 @@ public class JwtUtil{
     }
     
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
-        final Claims claims = extractAllClaims(token);
+        final Claims claims = this.extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
@@ -51,13 +56,13 @@ public class JwtUtil{
                    .compact();
     }
     
-    public String generateToken(UserDetails userDetails){
+    public String generateToken(UserType userType){
         Map<String, Object> claims = new HashMap<>();
-        return this.createToken(claims, userDetails.getUsername());
+        return this.createToken(claims, userType.getUsername().toString());
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails){
-        final String username = this.extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !this.isTokenExpired(token));
+    public boolean validateToken(String token, UserType userType){
+        final String id = this.extractId(token);
+        return (id.equals(userType.getUsername().toString()) && !this.isTokenExpired(token));
     }
 }
