@@ -41,7 +41,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         try {
             user = new ObjectMapper().readValue(request.getInputStream(), UserType.class);
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                user.getUsername(), user.getPassword(), new ArrayList<>());
+                user.getEmail(), user.getPassword(), new ArrayList<>());
             return this.authenticationManager.authenticate(authenticationToken);
         } catch (InternalAuthenticationServiceException e) {
             response.setStatus(403);
@@ -60,7 +60,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = "Bearer ";
         token = token + this.loginService.createJwtToken(user.getUsername());
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader("token", token);
+        response.setHeader("Authorization", token);
         chain.doFilter(request, response);
     }
 }

@@ -68,12 +68,12 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
               UserType userType = this.loginService.loadUserById(id);
 
               if (this.jwtUtil.validateToken(jwt, userType)) {
-                  UsernamePasswordAuthenticationToken usernamePassAuthToken =
-                          new UsernamePasswordAuthenticationToken(userType, null, userType.getAuthorities());
-
-                  usernamePassAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                  SecurityContextHolder.getContext().setAuthentication(usernamePassAuthToken); 
+                UsernamePasswordAuthenticationToken usernamePassAuthToken =
+                  new UsernamePasswordAuthenticationToken(userType, null, userType.getAuthorities());
+                
+                usernamePassAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                  
+                SecurityContextHolder.getContext().setAuthentication(usernamePassAuthToken); 
               }
           }
         }
@@ -81,7 +81,7 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
           filterChain.doFilter(request, response);
           return ;
         }
-        response.setHeader("token", authContent);
+        response.setHeader("Authorization", authContent);
         filterChain.doFilter(request,response);
     }
 }

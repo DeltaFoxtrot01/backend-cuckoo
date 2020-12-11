@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /*test unit to test the creation of users*/
 
 @SpringBootTest
+@TestPropertySource(locations="classpath:application-test.properties")
 @ExtendWith(SpringExtension.class)
 public class UserInfoTest{
 
@@ -30,7 +32,7 @@ public class UserInfoTest{
     private LoginRepository dbAPI;
 
     @Autowired
-    PasswordEncoder passEncoder;
+    private PasswordEncoder passEncoder;
 
     @BeforeEach
     public void initVariables(){
@@ -43,7 +45,8 @@ public class UserInfoTest{
     @Test
     public void createUserWithSuccess(){
         UserType user = new UserType();
-        user.setUsername(this.email);
+        String userId = null;
+        user.setEmail(this.email);
         user.setPassword(this.passEncoder.encode(this.pass));
         user.setFirstName(this.first);
         user.setLastName(this.last);
@@ -56,13 +59,15 @@ public class UserInfoTest{
 
         UserType res = null;
 
+        userId = this.dbAPI.getUserByEmail(this.email).getUsername().toString();
+
         try {
-            res = this.dbAPI.getUserInfo(this.email);
+            res = this.dbAPI.getUserInfo(userId);
         } catch (UnknownUserException e){
             fail("User should exist");
         }
 
-        assertEquals(this.email, res.getUsername(), "Should return the same email");
+        assertEquals(this.email, res.getEmail(), "Should return the same email");
         assertNull(res.getPassword(), "Should not return a password");
         assertEquals(this.first,res.getFirstName(), "Should return the same First Name");
         assertEquals(this.last,res.getLastName(), "Should return the same Last Name");

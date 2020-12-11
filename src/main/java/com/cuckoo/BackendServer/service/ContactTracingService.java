@@ -3,6 +3,8 @@ package com.cuckoo.BackendServer.service;
 import com.cuckoo.BackendServer.models.contactTracing.CuckooFilter;
 import com.cuckoo.BackendServer.models.contactTracing.patient.Patient;
 import com.cuckoo.BackendServer.models.contactTracing.patient.PatientDto;
+import com.cuckoo.BackendServer.service.remoteServices.NotificationsRemoteService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -11,6 +13,10 @@ import java.util.Set;
 
 @Service
 public class ContactTracingService {
+
+    @Autowired
+    NotificationsRemoteService notificationsRemoteService;
+
     public void addDoctorInformation() {
         //DAVID: BAH
     }
@@ -32,6 +38,7 @@ public class ContactTracingService {
         patients.values().stream()
                 .flatMap(p -> p.patientHashes().stream())
                 .forEach(filter::insert);
-        // TODO Send cuckoo filter via push notifications
+
+        notificationsRemoteService.sendDataNotification(Map.of("filter", filter.toString()));
     }
 }

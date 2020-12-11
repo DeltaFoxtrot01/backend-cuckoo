@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /*test unit to test the creation of users*/
 
 @SpringBootTest
+@TestPropertySource(locations="classpath:application-test.properties")
 @ExtendWith(SpringExtension.class)
 public class CreateUserTest{
 
@@ -44,7 +46,7 @@ public class CreateUserTest{
     @Test
     public void createUserWithSuccess(){
         UserType user = new UserType();
-        user.setUsername(this.email);
+        user.setEmail(this.email);
         user.setPassword(this.passEncoder.encode(this.pass));
         user.setFirstName(this.first);
         user.setLastName(this.last);
@@ -57,13 +59,13 @@ public class CreateUserTest{
         UserType res = null;
 
         try {
-            res = this.dbAPI.getUserByUsername(this.email);
+            res = this.dbAPI.getUserByEmail(this.email);
         } catch (UnknownUserException e){
             fail("User should exist");
         }
 
-        assertNotNull(res.getId(), "Should return an Id");
-        assertEquals(this.email, res.getUsername(), "Should return the same email");
+        assertNotNull(res.getUsername(), "Should return an Id");
+        assertEquals(this.email, res.getEmail(), "Should return the same email");
         assertTrue(this.passEncoder.matches(this.pass, res.getPassword()), "Should return the same password");
         assertEquals(this.first,res.getFirstName(), "Should return the same First Name");
         assertEquals(this.last,res.getLastName(), "Should return the same Last Name");
@@ -80,7 +82,7 @@ public class CreateUserTest{
     @Test
     void createUserThatAlreadyExists(){
         UserType user = new UserType();
-        user.setUsername(this.email);
+        user.setEmail(this.email);
         user.setPassword(this.passEncoder.encode(this.pass));
         user.setFirstName(this.first);
         user.setLastName(this.last);
@@ -105,7 +107,7 @@ public class CreateUserTest{
     @Test
     public void createUserWithInvalidEmail(){
         UserType user = new UserType();
-        user.setUsername("123");
+        user.setEmail("123");
         user.setPassword(this.pass);
         user.setFirstName(this.first);
         user.setLastName(this.last);

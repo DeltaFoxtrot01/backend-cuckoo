@@ -58,11 +58,11 @@ public class JwtUtil{
     
     public String generateToken(UserType userType){
         Map<String, Object> claims = new HashMap<>();
-        return this.createToken(claims, userType.getId().toString());
+        return this.createToken(claims, userType.getUsername().toString());
     }
 
     public boolean validateToken(String token, UserType userType){
         final String id = this.extractId(token);
-        return (id.equals(userType.getId().toString()) && !this.isTokenExpired(token));
+        return (id.equals(userType.getUsername().toString()) && !this.isTokenExpired(token));
     }
 }

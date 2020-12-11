@@ -16,3 +16,6 @@ spring.flyway.validateOnMigrate=true
 
 
 jwt.key=<KEY>
+
+
+firebase.key=<KEY>
