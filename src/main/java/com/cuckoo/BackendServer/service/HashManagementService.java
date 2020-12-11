@@ -58,6 +58,22 @@ public class HashManagementService {
   }
 
   /**
+   * Returns all the hashes from positive patients
+   * @return List of hashes
+   */
+  public List<HashDto> getPositiveHashes(){
+    return this.hashesRepository.getPositiveHashes();
+  }
+
+  /**
+   * Deletes a hash from a positive patient
+   * @param hashDto
+   */
+  public void deleteHashFromPositivePatient(HashDto hash){
+    this.hashesRepository.deletePositivePatient(hash);
+  }
+
+  /**
    * Deletes old hashes from the database periodically
    */
   @Scheduled(fixedDelay = 1000*60*60)
