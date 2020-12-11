@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CuckooFilterTest {
 
     private static CuckooFilter filter;
-    private static final int MAX_NUM_ENTRIES = 14;
+    private static final int MAX_NUM_ENTRIES = 42;
     private static final double MIN_LOAD_FACTOR = 0.95;
     private static final long MILLIS_PER_DAY = 1000 * 60 * 60 * 24L;
 
