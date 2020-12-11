@@ -1,6 +1,7 @@
 package com.cuckoo.BackendServer.securitysettings;
 
 import java.io.IOException;
+import io.jsonwebtoken.SignatureException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -60,7 +61,6 @@ public class JwtRequestFilter extends BasicAuthenticationFilter {
             filterChain.doFilter(request, response);
             return ;
         }
-
         try{
           id = jwtUtil.extractId(jwt);
 

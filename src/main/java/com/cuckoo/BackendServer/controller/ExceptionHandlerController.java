@@ -1,26 +1,17 @@
 package com.cuckoo.BackendServer.controller;
 
-import com.cuckoo.BackendServer.exceptions.DatabaseException;
-import com.cuckoo.BackendServer.exceptions.FieldTooLongException;
-import com.cuckoo.BackendServer.exceptions.FirebaseException;
-import com.cuckoo.BackendServer.exceptions.InvalidArgumentsException;
-import com.cuckoo.BackendServer.exceptions.PasswordweakException;
-import com.cuckoo.BackendServer.exceptions.UnathorizedRequestException;
-import com.cuckoo.BackendServer.exceptions.UnknownUserException;
-import com.cuckoo.BackendServer.exceptions.UserAlreadyExistsException;
-import com.cuckoo.BackendServer.exceptions.WrongPasswordException;
+import com.cuckoo.BackendServer.exceptions.*;
 
+import io.jsonwebtoken.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import io.jsonwebtoken.SignatureException;
-
 /*to handle the exceptions as HTTP responses*/
 
 @RestControllerAdvice
-public class ExceptionHandlerController{
+public class ExceptionHandlerController {
 
   @ExceptionHandler
   public ResponseEntity<Void> wrongPasswordHandler(WrongPasswordException e){
@@ -38,7 +29,7 @@ public class ExceptionHandlerController{
   }
 
   @ExceptionHandler
-  public ResponseEntity<Void> unknowUserHandler(UnknownUserException e){
+  public ResponseEntity<Void> unknownUserHandler(UnknownUserException e){
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
@@ -72,4 +63,8 @@ public class ExceptionHandlerController{
     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @ExceptionHandler
+  public ResponseEntity<?> contactTracingException(EmptySeedException e) {
+    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+}
 }
