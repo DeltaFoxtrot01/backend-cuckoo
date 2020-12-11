@@ -22,8 +22,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CuckooFilterTest {
 
     private static CuckooFilter filter;
-    private static final int MAX_NUM_ENTRIES = 42;
+    private static final int MAX_NUM_ENTRIES = 14;
     private static final double MIN_LOAD_FACTOR = 0.95;
+    private static final long MILLIS_PER_DAY = 1000 * 60 * 60 * 24L;
 
     private static final byte[] seed = new byte[32];
     private static String encodedSeed;
@@ -76,7 +77,7 @@ public class CuckooFilterTest {
             byte[] randomSeed = new byte[32];
             new Random().nextBytes(randomSeed);
             String randomEncodedSeed = Base64.getEncoder().encodeToString(randomSeed);
-            PatientDto dto = new PatientDto(randomEncodedSeed, i + 1, 42 * i + 5, i);
+            PatientDto dto = new PatientDto(randomEncodedSeed, i * MILLIS_PER_DAY, 42 * i + 5, 0L);
             Patient patient = new Patient(dto);
             patient.insertData(dto);
             data.add(patient);

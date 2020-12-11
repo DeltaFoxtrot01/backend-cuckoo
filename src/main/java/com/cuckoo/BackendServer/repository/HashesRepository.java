@@ -45,7 +45,7 @@ public class HashesRepository {
 
     try{
       long expDate = this.jdbcTemplate.query(sql,new Object[]{hashId}, new DateMapper()).get(0);
-      return expDate - 14*24*60*60*1000 < date && date < this.getCurrentTime();
+      return expDate - 14*24*60*60*1000 <= date && date <= this.getCurrentTime();
     } catch (DataAccessException e){
       throw new DatabaseException(e.getMessage());
     }
@@ -64,7 +64,7 @@ public class HashesRepository {
     if(hash.getNote().length() > 100)
       throw new FieldTooLongException("Note can only have 100 characters");
     if(hash.getHashValue().length() > 1000)
-      throw new FieldTooLongException("Note can only have 100 characters");
+      throw new FieldTooLongException("Note can only have 1000 characters");
 
     String sql = "INSERT INTO cuckoo.hashes(medic_id, hash_value, note, expiration_date) VALUES (?,?,?,?)";
     try{
