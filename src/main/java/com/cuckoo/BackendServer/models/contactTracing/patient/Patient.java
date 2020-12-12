@@ -32,13 +32,6 @@ public class Patient {
         checkEpochs(data.getEpoch(), data.getInfectedEpoch());
         this.infectedEpoch = data.getInfectedEpoch();
         this.day = data.getEpoch() / (1000 * 60 * 60 * 24);
-
-        System.out.println("\nPatient constructor");
-        System.out.println();
-        System.out.println(this.infectedEpoch);
-        System.out.println();
-        System.out.println(this.day);
-        System.out.println();
     }
 
     public void insertData(PatientDto data) {
@@ -48,15 +41,6 @@ public class Patient {
         this.seeds.add(Base64.getDecoder().decode(data.getEncodedSeed()));
         this.epochs.add(data.getEpoch());
         this.randomValues.add(data.getRandomNumber());
-
-        System.out.println("\nPatient insert data");
-        System.out.println();
-        System.out.println(this.seeds);
-        System.out.println();
-        System.out.println(this.epochs);
-        System.out.println();
-        System.out.println(this.randomValues);
-        System.out.println();
     }
 
     /**
@@ -75,11 +59,6 @@ public class Patient {
                 messageDigest.reset();
             }
 
-            System.out.println();
-            for (byte[] id : ephIDs) {
-                System.out.println(Arrays.toString(id));
-            }
-            System.out.println();
             return ephIDs;
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
@@ -106,12 +85,6 @@ public class Patient {
                 hashes.add(messageDigest.digest());
                 messageDigest.reset();
             }
-
-            System.out.println();
-            for (byte[] id : hashes) {
-                System.out.println(Arrays.toString(id));
-            }
-            System.out.println();
 
             return hashes;
         } catch (NoSuchAlgorithmException e) {
@@ -141,59 +114,30 @@ public class Patient {
                 messageDigest.update(randomValues.get(i));
             }
 
-            byte[] hash = messageDigest.digest();
-            System.out.println();
-            System.out.println(Arrays.toString(hash));
-            System.out.println();
-            return hash;
+            return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
         }
     }
 
     private void checkEpochs(Long epoch, Long infectedEpoch) {
-        System.out.println("\ncheckEpochs");
-        if (epoch == null || infectedEpoch == null) {
-            System.out.println("\nEmpty epoch");
-            System.out.println();
-            System.out.println(epoch == null);
-            System.out.println();
+        if (epoch == null || infectedEpoch == null)
             throw new EmptyEpochException();
-        }
 
-        if (epoch < 0 || infectedEpoch < 0) {
-            System.out.println("\nNegative epoch");
-            System.out.println();
-            System.out.println(epoch < 0);
-            System.out.println();
+        if (epoch < 0 || infectedEpoch < 0)
             throw new NegativeEpochException(epoch, infectedEpoch);
-        }
 
-        if (epoch < infectedEpoch) {
-            System.out.println("\nInvalid epoch");
-            System.out.println();
-            System.out.println(epoch);
-            System.out.println();
-            System.out.println(infectedEpoch);
-            System.out.println();
+        if (epoch < infectedEpoch)
             throw new InvalidEpochException(epoch, infectedEpoch);
-        }
 
     }
 
     private void checkEncodedSeed(String encodedSeed) {
-        System.out.println("\ncheckEncodedSeed");
-        System.out.println();
-        if (encodedSeed == null || encodedSeed.isEmpty()) {
-            System.out.println();
-            System.out.println(encodedSeed == null);
-            System.out.println();
+        if (encodedSeed == null || encodedSeed.isEmpty())
             throw new EmptySeedException();
-        }
     }
 
     private void checkRandomNumber(Long randomNumber) {
-        System.out.println("\ncheckRandomNumber");
         if (randomNumber == null)
             throw new EmptyRandomNumberException();
     }
