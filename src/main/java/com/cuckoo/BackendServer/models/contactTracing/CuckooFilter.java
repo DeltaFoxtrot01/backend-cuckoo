@@ -52,30 +52,45 @@ public class CuckooFilter {
     }
 
     public boolean insert(byte[] patientHash) {
+        System.out.println("\nInsert in filter");
         int fp = getFingerprint(patientHash);
         int b1 = tableHash(patientHash);
         int b2 = xorHash(b1, fp);
 
+        System.out.println(fp);
+        System.out.println(b1);
+        System.out.println(b2);
+
         int bucketWithSlots = -1;
         int emptySlot = -1;
+        System.out.println("\nFind entry in filter");
         for (int i = 0; i < MAX_BUCKET_SIZE; i++) {
             if (table[b1][i] == fp || table[b2][i] == fp) {
                 // Fingerprint already in filter
+                System.out.println("\nHash already in filter");
                 return true;
             } else if (table[b1][i] == -1) {
                 bucketWithSlots = b1;
                 emptySlot = i;
+                System.out.println("\nNew entry value in bucket 1");
+                System.out.println(bucketWithSlots);
+                System.out.println(emptySlot);
             } else if (table[b2][i] == -1) {
                 bucketWithSlots = b2;
                 emptySlot = i;
+                System.out.println("\nNew entry value in bucket 2");
+                System.out.println(bucketWithSlots);
+                System.out.println(emptySlot);
             }
         }
 
         this.count++;
         if (bucketWithSlots == -1) {
+            System.out.println("\nKick out entries");
             return kickOutEntry(b1, b2, fp);
         }
 
+        System.out.println("\nPut value");
         table[bucketWithSlots][emptySlot] = fp;
         return true;
     }
@@ -83,6 +98,7 @@ public class CuckooFilter {
     private boolean kickOutEntry(int b1, int b2, int fp) {
         int b = new Random().nextBoolean() ? b1 : b2;
         for (int k = 0; k < MAX_NUM_KICKS; k++) {
+            System.out.println("\nKick " + k);
             int i = new Random().nextInt(MAX_BUCKET_SIZE);
             int kickedFp = table[b][i];
             table[b][i] = fp;
@@ -96,6 +112,7 @@ public class CuckooFilter {
                 }
             }
         }
+        System.out.println("\nKicked out from filter");
 
         this.count--;
         return false;
