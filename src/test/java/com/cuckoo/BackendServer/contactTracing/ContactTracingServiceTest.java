@@ -101,7 +101,7 @@ public class ContactTracingServiceTest {
             byte[] randomSeed = new byte[32];
             new Random().nextBytes(randomSeed);
             String randomEncodedSeed = Base64.getEncoder().encodeToString(randomSeed);
-            PatientDto dto = new PatientDto(randomEncodedSeed, i * MILLIS_PER_DAY + infectedEpoch, 42 * i + 5, infectedEpoch);
+            PatientDto dto = new PatientDto(randomEncodedSeed, i * MILLIS_PER_DAY + infectedEpoch, 42 * i + 5, infectedEpoch / (1000 * 60 * 60));
             data.add(dto);
 
             Patient patient = new Patient(dto);
