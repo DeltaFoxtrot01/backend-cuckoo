@@ -44,7 +44,7 @@ public class ContactTracingService {
                 break;
         }
 
-        if (positive == null || !Objects.equals(infectedEpoch / (1000 * 60 * 60 * 24), positive.getDate() / (1000 * 60 * 60 * 24)))
+        if (positive == null || !Objects.equals(infectedEpoch, positive.getDate() / (1000 * 60 * 60)))
             throw new InvalidPatientDataException();
 
         hashesService.deleteHashFromPositivePatient(positive);
@@ -78,8 +78,9 @@ public class ContactTracingService {
             return false;
 
         for (int i = 0; i < provided.length; i++)
-            if (provided[i] != saved[i])
+            if (provided[i] != saved[i]) {
                 return false;
+            }
 
         return true;
     }

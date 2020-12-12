@@ -159,17 +159,20 @@ public class HashesRepository {
    * @param hash Hash to be deleted
    */
   public void deletePositivePatient(HashDto hash){
-    if(hash == null)
+    if(hash == null) {
       throw new InvalidArgumentsException("Hash can not be null");
-    if(hash.getId() == null)
+    }
+    if(hash.getId() == null) {
       throw new InvalidArgumentsException("Hash id can not be null");
+    }
     
     String sql = "DELETE FROM cuckoo.hashes WHERE is_positive = true AND hash_id = ?";
 
     try{
       int res = this.jdbcTemplate.update(sql,hash.getId());
-      if(res == 0)
+      if(res == 0) {
         throw new PatientNotPositiveException("Can not delete hash from positive patient");
+      }
     } catch(DataAccessException e){
       throw new DatabaseException("Unable to delete hash via Id: " + e.getMessage());
     }
