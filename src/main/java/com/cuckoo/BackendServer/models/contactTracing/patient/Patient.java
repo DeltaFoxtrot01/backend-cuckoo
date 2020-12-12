@@ -145,7 +145,7 @@ public class Patient {
             System.out.println();
             System.out.println(Arrays.toString(hash));
             System.out.println();
-            return messageDigest.digest();
+            return hash;
         } catch (NoSuchAlgorithmException e) {
             throw new UnknownEncryptionAlgorithmException(this.ENCRYPTION_ALGORITHM);
         }

@@ -40,6 +40,10 @@ public class ContactTracingService {
         HashDto positive = null;
         System.out.println("\nFor loop patients for hashes");
         for (Patient p : patients.values()) {
+            System.out.println();
+            System.out.println("\nMedic hash\n");
+            System.out.println(Arrays.toString(p.medicHash()));
+            System.out.println();
             positive = validateHash(p.medicHash());
             System.out.println(positive);
             if (positive != null)
