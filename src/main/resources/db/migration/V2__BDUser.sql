@@ -8,6 +8,6 @@ INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('vasc.guita@
 -- password: bogosort
 INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('rick.roll@gmail.com','Peter','Adam','$2y$12$BVoH4t.6c8CVkZvHLBxiC./tSKeOr0QmXHwdiGSoSH2C39GADbRvy ');
 -- password: borbinha
-INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('pedro.carrott@gmail.com','Peter','Cenoura','$2y$12$ob3pUf2.sO6aN5Yd2J/KWubEF6goCmw2xUtUZbtx0q.Q5jGLG4TeC ');
+INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('pedro.cenoura@gmail.com','Peter','Cenoura','$2y$12$ob3pUf2.sO6aN5Yd2J/KWubEF6goCmw2xUtUZbtx0q.Q5jGLG4TeC ');
 -- password: loveDre
 INSERT INTO cuckoo.users (email,first_name,last_name, pass) VALUES ('todo.misto@gmail.com','Nuno','Svedra','$2y$12$OuXTdy.zsHSkDaFUPMoChudXchTQDYSkh/IIxxVzrMoKEZB5A6Lva ');
