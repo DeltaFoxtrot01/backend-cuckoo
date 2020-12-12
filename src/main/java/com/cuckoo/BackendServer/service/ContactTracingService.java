@@ -53,11 +53,11 @@ public class ContactTracingService {
         System.out.println("\nInvalid Patient data");
         System.out.println(positive);
         if (positive != null)
-            System.out.println(!Objects.equals(infectedEpoch / (1000 * 60 * 60 * 24), positive.getDate() / (1000 * 60 * 60 * 24)));
+            System.out.println(!Objects.equals(infectedEpoch, positive.getDate() / (1000 * 60 * 60 * 24)));
         System.out.println(infectedEpoch);
         if (positive != null)
             System.out.println(positive.getDate());
-        if (positive == null || !Objects.equals(infectedEpoch / (1000 * 60 * 60 * 24), positive.getDate() / (1000 * 60 * 60 * 24)))
+        if (positive == null || !Objects.equals(infectedEpoch, positive.getDate() / (1000 * 60 * 60 * 24)))
             throw new InvalidPatientDataException();
 
         hashesService.deleteHashFromPositivePatient(positive);
