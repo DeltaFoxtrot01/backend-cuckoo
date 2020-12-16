@@ -16,6 +16,7 @@ public class HashPositiveMapper implements RowMapper<HashDto> {
       res.setId(rs.getInt("hash_id"));
       res.setHashValue(rs.getString("hash_value"));
       res.setDate(rs.getLong("medic_date"));
+      res.setExpirationDate(rs.getLong("expiration_date"));
       return res;
     }
     catch(SQLException e){

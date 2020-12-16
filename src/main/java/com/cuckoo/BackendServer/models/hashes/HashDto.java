@@ -6,6 +6,7 @@ public class HashDto {
   private String note;
   private Integer id;
   private Long date;
+  private Long expirationDate;
 
 
   public HashDto(){
@@ -53,5 +54,13 @@ public class HashDto {
 
   public void setDate(Long date) {
     this.date = date;
+  }
+
+  public Long getExpirationDate() {
+    return expirationDate;
+  }
+
+  public void setExpirationDate(Long expirationDate) {
+    this.expirationDate = expirationDate;
   }
 }

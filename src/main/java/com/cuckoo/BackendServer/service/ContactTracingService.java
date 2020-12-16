@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ContactTracingService {
@@ -47,10 +48,39 @@ public class ContactTracingService {
         if (positive == null || !Objects.equals(infectedEpoch, positive.getDate() / (1000 * 60 * 60)))
             throw new InvalidPatientDataException();
 
+        Long submittedEpoch = positive.getExpirationDate() / (1000 * 60 * 60);
+        Long submittedDay = submittedEpoch / 24;
+
+        Set<Patient> validPatients = new HashSet<>();
+        for (Patient p : patients.values()) {
+            if (p.getDay() > submittedDay)
+                continue;
+
+            if (p.getDay().equals(submittedDay)){
+                List<byte[]> validSeeds = new ArrayList<>();
+                List<Long> validEpochs = new ArrayList<>();
+                List<Long> validRandomValues = new ArrayList<>();
+
+                for (int i = 0; i < p.getSeeds().size(); i++) {
+                    if (p.getEpochs().get(i) <= submittedEpoch) {
+                        validSeeds.add(p.getSeeds().get(i));
+                        validEpochs.add(p.getEpochs().get(i));
+                        validRandomValues.add(p.getRandomValues().get(i));
+                    }
+                }
+
+                p.setSeeds(validSeeds);
+                p.setEpochs(validEpochs);
+                p.setRandomValues(validRandomValues);
+            }
+
+            validPatients.add(p);
+        }
+
         hashesService.deleteHashFromPositivePatient(positive);
 
         CuckooFilter filter = new CuckooFilter();
-        patients.values().stream()
+        validPatients.stream()
                 .flatMap(p -> p.patientHashes().stream())
                 .forEach(filter::insert);
 

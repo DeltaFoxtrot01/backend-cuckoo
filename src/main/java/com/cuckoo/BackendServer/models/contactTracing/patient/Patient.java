@@ -2,6 +2,7 @@ package com.cuckoo.BackendServer.models.contactTracing.patient;
 
 import com.cuckoo.BackendServer.exceptions.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -17,13 +18,16 @@ public class Patient {
     private final Long day;
 
     @Getter
-    private final List<byte[]> seeds = new ArrayList<>();
+    @Setter
+    private List<byte[]> seeds = new ArrayList<>();
 
     @Getter
-    private final List<Long> epochs = new ArrayList<>();
+    @Setter
+    private List<Long> epochs = new ArrayList<>();
 
     @Getter
-    private final List<Long> randomValues = new ArrayList<>();
+    @Setter
+    private List<Long> randomValues = new ArrayList<>();
 
     @Getter
     private final Long infectedEpoch;

@@ -80,7 +80,7 @@ public class HashesRepository {
    * @return
    */
   public List<HashDto> getPositiveHashes(){
-    String sql = "SELECT hash_value, hash_id, medic_date FROM cuckoo.hashes WHERE is_positive = true";
+    String sql = "SELECT hash_value, hash_id, medic_date, expiration_date FROM cuckoo.hashes WHERE is_positive = true";
 
     try{
       return this.jdbcTemplate.query(sql, new HashPositiveMapper());
